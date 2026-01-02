@@ -342,9 +342,11 @@ export default function SportBreakdownSlide({ stats }: SportBreakdownSlideProps)
                       <div className="w-3 h-3 md:w-4 md:h-4 rounded-full" style={{ backgroundColor: item.color, opacity: 0.6 }} />
                     </div>
                   )}
-                  <span className="text-white text-sm md:text-base font-medium flex-1 text-left truncate">{item.name}</span>
-                  <span className="text-white text-sm md:text-base font-bold">{item.count}x</span>
-                  <span className="text-white/50 text-xs md:text-sm">({percent}%)</span>
+                  <span className="text-white text-sm md:text-base font-medium min-w-0 flex-1 text-left truncate">{item.name}</span>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <span className="text-white text-sm md:text-base font-bold tabular-nums">{item.count}x</span>
+                    <span className="text-white/50 text-xs md:text-sm tabular-nums w-10 text-right">({percent}%)</span>
+                  </div>
                 </motion.div>
               );
             })}
