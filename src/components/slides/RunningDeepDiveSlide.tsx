@@ -172,6 +172,51 @@ function getDistanceComparison(km: number): string {
   return `${Math.round(km / 10)} Parkruns`;
 }
 
+// Kipchoge comparison - he runs ~12,000 km/year, marathon WR pace 2:52 min/km
+function getKipchogeComparison(totalKm: number, avgPaceMinPerKm: number): { text: string; subtext: string } | null {
+  // Kipchoge yearly km
+  const kipchogeYearlyKm = 12000;
+  const percentOfKipchoge = (totalKm / kipchogeYearlyKm) * 100;
+
+  // Kipchoge marathon WR pace: 2:00:35 for 42.195km = ~2.85 min/km
+  const kipchogePace = 2.85;
+
+  if (avgPaceMinPerKm > 0 && avgPaceMinPerKm < 10) {
+    // In a 5K race, how far ahead would Kipchoge be?
+    const your5kTime = avgPaceMinPerKm * 5; // minutes
+    const kipchoge5kTime = kipchogePace * 5; // ~14.25 minutes
+    const timeDiff = your5kTime - kipchoge5kTime;
+    const distanceAhead = (timeDiff * 1000) / avgPaceMinPerKm; // meters
+
+    if (distanceAhead > 0) {
+      return {
+        text: `${Math.round(distanceAhead)}m`,
+        subtext: "Kipchoge wäre vor dir (5K)"
+      };
+    }
+  }
+
+  return {
+    text: `${percentOfKipchoge.toFixed(1)}%`,
+    subtext: "von Kipchoges Jahres-km"
+  };
+}
+
+// Animal speed comparison - returns what animal you're closest to
+function getAnimalComparison(avgPaceMinPerKm: number): { emoji: string; animal: string; text: string } | null {
+  if (avgPaceMinPerKm <= 0 || avgPaceMinPerKm > 15) return null;
+
+  const speedKmh = 60 / avgPaceMinPerKm;
+
+  // Animals with their top speeds (using sustainable speeds for comparison)
+  if (speedKmh >= 20) return { emoji: "🐕", animal: "Hund", text: "So schnell wie ein trabender Hund" };
+  if (speedKmh >= 15) return { emoji: "🐘", animal: "Elefant", text: "Schneller als ein Elefant (15 km/h)" };
+  if (speedKmh >= 12) return { emoji: "🐖", animal: "Wildschwein", text: "Auf Augenhöhe mit einem Wildschwein" };
+  if (speedKmh >= 10) return { emoji: "🐔", animal: "Huhn", text: "Schneller als ein rennendes Huhn" };
+  if (speedKmh >= 6) return { emoji: "🐢", animal: "Maus", text: "Schneller als eine Maus (8 km/h)" };
+  return { emoji: "🚶", animal: "Mensch", text: "Gemütliches Jogging-Tempo" };
+}
+
 export default function RunningDeepDiveSlide({ stats }: RunningDeepDiveSlideProps) {
   const running = stats.byType.running;
 
@@ -202,6 +247,8 @@ export default function RunningDeepDiveSlide({ stats }: RunningDeepDiveSlideProp
 
   const distanceComparison = getDistanceComparison(totalKm);
   const marathons = (totalKm / 42.195).toFixed(1);
+  const kipchogeComp = getKipchogeComparison(totalKm, avgPace);
+  const animalComp = getAnimalComparison(avgPace);
 
   const formatPace = (pace: number) => {
     const mins = Math.floor(pace);
@@ -368,11 +415,33 @@ export default function RunningDeepDiveSlide({ stats }: RunningDeepDiveSlideProp
           )}
         </motion.div>
 
+        {/* Fun Comparisons */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.4 }}
+          className="flex flex-wrap justify-center gap-2 md:gap-3 mt-4"
+        >
+          {kipchogeComp && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border border-orange-500/20">
+              <span className="text-base">🏃</span>
+              <span className="text-orange-400 font-bold text-sm">{kipchogeComp.text}</span>
+              <span className="text-white/40 text-xs">{kipchogeComp.subtext}</span>
+            </div>
+          )}
+          {animalComp && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+              <span className="text-base">{animalComp.emoji}</span>
+              <span className="text-white/60 text-xs">{animalComp.text}</span>
+            </div>
+          )}
+        </motion.div>
+
         {/* Fun Fact Footer */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
+          transition={{ delay: 1.6 }}
           className="mt-3 md:mt-4"
         >
           <p className="text-white/40 text-xs md:text-sm">

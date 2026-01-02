@@ -490,6 +490,25 @@ function getDistanceComparison(km: number): { text: string; detail: string } {
   };
 }
 
+// Pro cyclist comparison
+function getProComparison(totalKm: number, avgSpeed: number): { text: string; subtext: string } | null {
+  // Pro cyclists ride ~30,000-35,000 km/year
+  const proYearlyKm = 32000;
+  const percentOfPro = (totalKm / proYearlyKm) * 100;
+
+  // Pogačar/Vingegaard avg speed in TdF ~41 km/h
+  const proAvgSpeed = 41;
+
+  if (avgSpeed > 0) {
+    return {
+      text: `${percentOfPro.toFixed(1)}%`,
+      subtext: "eines Profi-Jahres"
+    };
+  }
+
+  return null;
+}
+
 // Calculate CO2 saved vs car
 function getCO2Saved(km: number): { kg: number; comparison: string } {
   // Average car: ~150g CO2/km, bike: ~21g CO2/km (including food production)
@@ -537,6 +556,7 @@ export default function CyclingDeepDiveSlide({ stats }: CyclingDeepDiveSlideProp
 
   const distanceComparison = getDistanceComparison(totalKm);
   const co2Saved = getCO2Saved(totalKm);
+  const proComp = getProComparison(totalKm, avgSpeed);
 
   const isUltra = longestRideDistance >= 100000;
 
@@ -709,24 +729,29 @@ export default function CyclingDeepDiveSlide({ stats }: CyclingDeepDiveSlideProp
           </div>
         </motion.div>
 
-        {/* CO2 Explanation */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          className="text-white/40 text-xs mb-4"
-        >
-          {co2Saved.comparison}
-        </motion.p>
-
-        {/* Fun comparison */}
+        {/* Fun Comparisons */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.7 }}
-          className="text-white/30 text-xs"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5 }}
+          className="flex flex-wrap justify-center gap-2 mb-4"
         >
-          {Math.round(totalHours)} Stunden = {(totalHours / 24).toFixed(1)} Tage durchgehend radeln
+          {proComp && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-cyan-500/10 to-teal-500/10 border border-cyan-500/20">
+              <span className="text-base">🚴</span>
+              <span className="text-cyan-400 font-bold text-sm">{proComp.text}</span>
+              <span className="text-white/40 text-xs">{proComp.subtext}</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+            <span className="text-base">🌳</span>
+            <span className="text-emerald-400 font-bold text-sm">{co2Saved.kg >= 100 ? Math.round(co2Saved.kg / 22) : Math.round(co2Saved.kg)}</span>
+            <span className="text-white/40 text-xs">{co2Saved.kg >= 100 ? "Bäume/Jahr" : "kg CO₂ gespart"}</span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+            <span className="text-base">⏱️</span>
+            <span className="text-white/60 text-xs">{(totalHours / 24).toFixed(1)} Tage non-stop</span>
+          </div>
         </motion.div>
 
         {/* Data Source Attribution */}

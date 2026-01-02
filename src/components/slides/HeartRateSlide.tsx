@@ -87,6 +87,34 @@ function BloodVesselBackground() {
   );
 }
 
+// Animal heart rate comparison
+function getAnimalHeartComparison(restingHR: number): { emoji: string; animal: string; text: string } | null {
+  if (!restingHR || restingHR <= 0) return null;
+
+  // Animal resting heart rates
+  if (restingHR <= 45) return { emoji: "🐘", animal: "Elefant", text: "Ruhepuls wie ein Elefant (30-40 bpm)" };
+  if (restingHR <= 55) return { emoji: "🦁", animal: "Löwe", text: "Entspannt wie ein Löwe (40-50 bpm)" };
+  if (restingHR <= 65) return { emoji: "🐕", animal: "Hund", text: "Ruhig wie ein entspannter Hund" };
+  if (restingHR <= 75) return { emoji: "🐱", animal: "Katze", text: "Gelassen wie eine Katze (60-80 bpm)" };
+  if (restingHR <= 90) return { emoji: "🐰", animal: "Hase", text: "Lebhaft wie ein Kaninchen (80-100 bpm)" };
+  return { emoji: "🐹", animal: "Hamster", text: "Energetisch wie ein kleines Nagetier" };
+}
+
+// Fun heart facts
+function getHeartFunFact(totalHeartbeats: number, restingHR: number): string | null {
+  if (totalHeartbeats > 0) {
+    // Whale heart beats ~6 times per minute
+    const whaleMinutes = totalHeartbeats / 6;
+    if (whaleMinutes > 60) {
+      return `Ein Blauwalherz (6 bpm) bräuchte ${Math.round(whaleMinutes / 60)} Stunden für so viele Schläge`;
+    }
+  }
+  if (restingHR && restingHR < 60) {
+    return "Dein Ruhepuls ist niedriger als der Durchschnitt (60-100 bpm)";
+  }
+  return null;
+}
+
 // Heart fitness level based on resting HR
 function getHeartFitnessLevel(restingHR: number): {
   level: string;
@@ -181,6 +209,9 @@ export default function HeartRateSlide({ stats }: HeartRateSlideProps) {
   // Get fitness level
   const fitnessLevel = avgRestingHR ? getHeartFitnessLevel(avgRestingHR) : null;
 
+  // Fun comparisons
+  const animalComp = avgRestingHR ? getAnimalHeartComparison(avgRestingHR) : null;
+  const heartFunFact = getHeartFunFact(totalHeartbeats, avgRestingHR || 0);
 
   return (
     <SlideWrapper gradient="from-[#1a0a1e] via-[#2d0a28] to-[#1a0a1e]">
@@ -329,6 +360,29 @@ export default function HeartRateSlide({ stats }: HeartRateSlideProps) {
             <div className="text-center text-white/60 text-xs mt-2">
               Spanne: {hrReserve} bpm ({Math.round((avgTrainingHR || 0) / maxHR * 100)}% Auslastung beim Training)
             </div>
+          </motion.div>
+        )}
+
+        {/* Fun Comparisons */}
+        {(animalComp || heartFunFact) && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.3 }}
+            className="flex flex-wrap justify-center gap-2 mt-4"
+          >
+            {animalComp && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-red-500/10 to-pink-500/10 border border-red-500/20">
+                <span className="text-base">{animalComp.emoji}</span>
+                <span className="text-white/60 text-xs">{animalComp.text}</span>
+              </div>
+            )}
+            {heartFunFact && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+                <span className="text-base">🐋</span>
+                <span className="text-white/50 text-xs">{heartFunFact}</span>
+              </div>
+            )}
           </motion.div>
         )}
 

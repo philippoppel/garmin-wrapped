@@ -240,6 +240,37 @@ function getJourneyComparison(km: number): { text: string } {
   return { text: "Eine beeindruckende Strecke" };
 }
 
+// Fun distance comparisons
+function getFunComparisons(km: number): Array<{ emoji: string; value: string; label: string }> {
+  const comparisons: Array<{ emoji: string; value: string; label: string }> = [];
+
+  // Bodensee (63 km Umfang)
+  const bodensee = km / 63;
+  if (bodensee >= 1) {
+    comparisons.push({ emoji: "🏊", value: `${bodensee.toFixed(1)}×`, label: "um den Bodensee" });
+  }
+
+  // Äquator (40.075 km)
+  const equator = (km / 40075) * 100;
+  if (equator >= 0.1) {
+    comparisons.push({ emoji: "🌍", value: `${equator.toFixed(1)}%`, label: "Erdumrundung" });
+  }
+
+  // Mond (384.400 km)
+  const moon = (km / 384400) * 100;
+  if (moon >= 0.01) {
+    comparisons.push({ emoji: "🌙", value: `${moon.toFixed(2)}%`, label: "zum Mond" });
+  }
+
+  // Deutschland quer (876 km)
+  const germany = km / 876;
+  if (germany >= 0.5) {
+    comparisons.push({ emoji: "🇩🇪", value: `${germany.toFixed(1)}×`, label: "quer durch DE" });
+  }
+
+  return comparisons.slice(0, 3);
+}
+
 export default function DistanceSlide({ stats }: DistanceSlideProps) {
   // Skip slide if no distance data
   if (stats.totalDistance === 0 || stats.totalActivities === 0) {
@@ -248,6 +279,7 @@ export default function DistanceSlide({ stats }: DistanceSlideProps) {
 
   const journey = getJourneyComparison(stats.totalDistance);
   const avgPerActivity = stats.totalDistance / stats.totalActivities;
+  const funComparisons = getFunComparisons(stats.totalDistance);
 
   return (
     <SlideWrapper gradient="from-[#1a0a2e] via-[#2d1b4e] to-[#1a0a2e]">
@@ -285,6 +317,30 @@ export default function DistanceSlide({ stats }: DistanceSlideProps) {
         >
           <p className="text-white/60 text-xs md:text-sm px-4">{journey.text}</p>
         </motion.div>
+
+        {/* Fun comparisons */}
+        {funComparisons.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.4 }}
+            className="flex flex-wrap justify-center gap-2 md:gap-3 mb-4 md:mb-6"
+          >
+            {funComparisons.map((comp, i) => (
+              <motion.div
+                key={comp.label}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.5 + i * 0.1 }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10"
+              >
+                <span className="text-base">{comp.emoji}</span>
+                <span className="text-white font-semibold text-sm">{comp.value}</span>
+                <span className="text-white/50 text-xs">{comp.label}</span>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
 
         {/* Sport breakdown */}
         <motion.div
