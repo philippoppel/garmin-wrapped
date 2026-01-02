@@ -404,6 +404,64 @@ const CUSTOM_STATS: CustomStat[] = [
     available: (s) => s.totalCalories >= 50000,
     category: "fun",
   },
+  {
+    id: "bathtubs",
+    label: "Badewannen Schweiß",
+    icon: <Droplets className="w-5 h-5" />,
+    getValue: (s) => {
+      const sweatL = s.wellnessInsights?.estimatedYearlySweatLossMl
+        ? s.wellnessInsights.estimatedYearlySweatLossMl / 1000
+        : s.totalDuration * 1;
+      return (sweatL / 150).toFixed(1); // ~150L per bathtub
+    },
+    available: (s) => {
+      const sweatL = s.wellnessInsights?.estimatedYearlySweatLossMl
+        ? s.wellnessInsights.estimatedYearlySweatLossMl / 1000
+        : s.totalDuration * 1;
+      return sweatL >= 75; // At least 0.5 bathtubs
+    },
+    category: "fun",
+  },
+  {
+    id: "burgers",
+    label: "Burger verbrannt",
+    icon: <Flame className="w-5 h-5" />,
+    getValue: (s) => Math.round(s.totalCalories / 550).toString(),
+    available: (s) => s.totalCalories >= 5500,
+    category: "fun",
+  },
+  {
+    id: "beers",
+    label: "Bier abtrainiert",
+    icon: <Zap className="w-5 h-5" />,
+    getValue: (s) => Math.round(s.totalCalories / 150).toString(),
+    available: (s) => s.totalCalories >= 3000,
+    category: "fun",
+  },
+  {
+    id: "eiffel",
+    label: "× Eiffelturm",
+    icon: <Mountain className="w-5 h-5" />,
+    getValue: (s) => `${Math.round(s.totalElevation / 324)}×`,
+    available: (s) => s.totalElevation >= 324,
+    category: "fun",
+  },
+  {
+    id: "moon",
+    label: "% zum Mond",
+    icon: <Plane className="w-5 h-5" />,
+    getValue: (s) => `${(s.totalDistance / 384400 * 100).toFixed(2)}%`,
+    available: (s) => s.totalDistance >= 100,
+    category: "fun",
+  },
+  {
+    id: "chocolate",
+    label: "Tafeln Schoko",
+    icon: <Flame className="w-5 h-5" />,
+    getValue: (s) => Math.round(s.totalCalories / 530).toString(),
+    available: (s) => s.totalCalories >= 5300,
+    category: "fun",
+  },
   // Records
   {
     id: "fastest-5k",
