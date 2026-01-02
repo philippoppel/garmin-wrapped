@@ -434,28 +434,6 @@ export default function RunningDeepDiveSlide({ stats }: RunningDeepDiveSlideProp
           )}
         </motion.div>
 
-        {/* Fun Comparisons */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.4 }}
-          className="flex flex-wrap justify-center gap-2 md:gap-3 mt-4"
-        >
-          {kipchogeComp && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border border-orange-500/20">
-              <span className="text-base">🏃</span>
-              <span className="text-orange-400 font-bold text-sm">{kipchogeComp.text}</span>
-              <span className="text-white/40 text-xs">{kipchogeComp.subtext}</span>
-            </div>
-          )}
-          {speedComp && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-              <span className="text-base">{speedComp.emoji}</span>
-              <span className="text-white/60 text-xs">{speedComp.text}</span>
-            </div>
-          )}
-        </motion.div>
-
         {/* Fun Fact Footer */}
         <motion.div
           initial={{ opacity: 0 }}
