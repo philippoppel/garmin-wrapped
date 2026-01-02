@@ -367,41 +367,35 @@ async function fetchWellnessData(client: any, year: number) {
     }
   }
 
-  // Fetch REAL floor data - only 7 samples spread across the year to avoid rate limiting
-  console.log("Fetching floor data samples...");
-  const floorSampleDates = [];
-  for (let month = 0; month < 12; month += 2) {
-    // Sample every 2 months = 6 samples
-    const sampleDate = new Date(year, month, 15);
-    if (sampleDate <= today && sampleDate.getFullYear() === year) {
-      floorSampleDates.push(sampleDate);
-    }
-  }
+  // Fetch REAL floor data - ONE aggregated API call for the entire year
+  console.log("Fetching floor data (aggregated)...");
+  const yearStart = `${year}-01-01`;
+  const yearEnd = `${year}-12-31`;
 
-  for (const sampleDate of floorSampleDates) {
-    const dateStr = sampleDate.toISOString().split("T")[0];
-    try {
-      // Try the daily summary endpoint which includes floorsClimbed
-      const dailySummary = await client.get(
-        `https://connect.garmin.com/modern/proxy/usersummary-service/usersummary/daily/${dateStr}`,
-        {}
-      ).catch(() => null);
+  try {
+    // Try aggregated floors endpoint (similar to steps)
+    const floorsData = await client.get(
+      `https://connect.garmin.com/modern/proxy/usersummary-service/stats/floors/daily/${yearStart}/${yearEnd}`,
+      {}
+    ).catch(() => null);
 
-      if (dailySummary && typeof dailySummary.floorsClimbed === "number" && dailySummary.floorsClimbed > 0) {
-        wellnessData.floorSamples.push({
-          date: sampleDate,
-          floors: dailySummary.floorsClimbed,
-          floorsGoal: dailySummary.floorsClimbedGoal || null,
-        });
-        wellnessData.floorDataAvailable = true;
-        console.log(`  Floor data for ${dateStr}: ${dailySummary.floorsClimbed} floors`);
+    if (floorsData && Array.isArray(floorsData) && floorsData.length > 0) {
+      for (const day of floorsData) {
+        if (day.floorsClimbed > 0 || day.floors > 0) {
+          wellnessData.floorSamples.push({
+            date: new Date(day.calendarDate),
+            floors: day.floorsClimbed || day.floors || 0,
+          });
+        }
       }
-    } catch (e) {
-      // Floor data not available for this date
+      wellnessData.floorDataAvailable = wellnessData.floorSamples.length > 0;
+      console.log(`  Got ${wellnessData.floorSamples.length} days of floor data from aggregated endpoint`);
     }
+  } catch (e) {
+    console.log("  Aggregated floors endpoint not available");
   }
 
-  console.log(`Floor data: ${wellnessData.floorSamples.length} samples, available: ${wellnessData.floorDataAvailable}`);
+  console.log(`Floor data: ${wellnessData.floorSamples.length} days, available: ${wellnessData.floorDataAvailable}`);
 
   // Calculate monthly averages
   for (let m = 0; m < 12; m++) {
