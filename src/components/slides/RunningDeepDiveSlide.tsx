@@ -172,54 +172,68 @@ function getDistanceComparison(km: number): string {
   return `${Math.round(km / 10)} Parkruns`;
 }
 
-// Kipchoge comparison - he runs ~12,000 km/year, marathon WR pace 2:52 min/km
-function getKipchogeComparison(totalKm: number, avgPaceMinPerKm: number): { text: string; subtext: string } | null {
-  // Kipchoge marathon WR pace: 2:00:35 for 42.195km = ~2.85 min/km
-  const kipchogePace = 2.85;
+// Kipchoge comparison - how many marathons would he run in your total running time?
+function getKipchogeComparison(totalKm: number, totalHours: number): { text: string; subtext: string } | null {
+  if (totalHours <= 0) return null;
 
-  if (avgPaceMinPerKm > 0 && avgPaceMinPerKm < 10) {
-    // On a 400m track: how many times would Kipchoge lap you during your 5K?
-    const your5kTime = avgPaceMinPerKm * 5; // minutes for your 5K
-    const kipchogeDistanceKm = your5kTime / kipchogePace; // km Kipchoge runs in your 5K time
+  // Kipchoge marathon WR: 2:00:35 = ~2.01 hours for 42.195km
+  const kipchogeMarathonHours = 2.01;
+  const marathonsKipchoge = totalHours / kipchogeMarathonHours;
 
-    // Number of 400m laps each person completes
-    const yourLaps = 5 / 0.4; // 12.5 laps
-    const kipchogeLaps = kipchogeDistanceKm / 0.4;
-
-    // How many times does he pass you (lap you)?
-    const timesLapped = Math.floor(kipchogeLaps - yourLaps);
-
-    if (timesLapped >= 1) {
-      return {
-        text: `${timesLapped}×`,
-        subtext: "hätte Kipchoge dich überrundet"
-      };
-    }
+  if (marathonsKipchoge >= 1) {
+    return {
+      text: `${marathonsKipchoge.toFixed(1)}`,
+      subtext: `Marathons hätte Kipchoge in deiner Laufzeit geschafft`
+    };
   }
 
-  // Fallback: percentage of Kipchoge's yearly km
-  const kipchogeYearlyKm = 12000;
-  const percentOfKipchoge = (totalKm / kipchogeYearlyKm) * 100;
-
+  // If less than 1 marathon, show km instead
+  const kmKipchoge = (totalHours / kipchogeMarathonHours) * 42.195;
   return {
-    text: `${percentOfKipchoge.toFixed(1)}%`,
-    subtext: "von Kipchoges Jahres-km"
+    text: `${kmKipchoge.toFixed(0)} km`,
+    subtext: `wäre Kipchoge in deiner Zeit gelaufen`
   };
 }
 
-// Animal speed comparison - returns what animal you're closest to
-function getAnimalComparison(avgPaceMinPerKm: number): { emoji: string; animal: string; text: string } | null {
+// Fun speed comparison - random funny comparisons with actual avg speed
+function getSpeedComparison(avgPaceMinPerKm: number): { emoji: string; text: string } | null {
   if (avgPaceMinPerKm <= 0 || avgPaceMinPerKm > 15) return null;
 
   const speedKmh = 60 / avgPaceMinPerKm;
+  const speedRounded = speedKmh.toFixed(1);
 
-  // Animals with their top speeds (using sustainable speeds for comparison)
-  if (speedKmh >= 20) return { emoji: "🐕", animal: "Hund", text: "So schnell wie ein trabender Hund" };
-  if (speedKmh >= 15) return { emoji: "🐘", animal: "Elefant", text: "Schneller als ein Elefant (15 km/h)" };
-  if (speedKmh >= 12) return { emoji: "🐖", animal: "Wildschwein", text: "Auf Augenhöhe mit einem Wildschwein" };
-  if (speedKmh >= 10) return { emoji: "🐔", animal: "Huhn", text: "Schneller als ein rennendes Huhn" };
-  if (speedKmh >= 6) return { emoji: "🐢", animal: "Maus", text: "Schneller als eine Maus (8 km/h)" };
-  return { emoji: "🚶", animal: "Mensch", text: "Gemütliches Jogging-Tempo" };
+  // Random fun comparisons based on speed ranges
+  if (speedKmh >= 14) {
+    const comparisons = [
+      { emoji: "📠", text: `Ø ${speedRounded} km/h – So schnell wie ein Fax durch die Leitung` },
+      { emoji: "🛴", text: `Ø ${speedRounded} km/h – E-Scooter-Geschwindigkeit erreicht` },
+      { emoji: "🦘", text: `Ø ${speedRounded} km/h – Ein hüpfendes Känguru-Tempo` },
+    ];
+    return comparisons[Math.floor(Math.random() * comparisons.length)];
+  }
+  if (speedKmh >= 11) {
+    const comparisons = [
+      { emoji: "🐿️", text: `Ø ${speedRounded} km/h – Eichhörnchen auf der Flucht` },
+      { emoji: "🛒", text: `Ø ${speedRounded} km/h – Schneller als ein Einkaufswagen bergab` },
+      { emoji: "🎾", text: `Ø ${speedRounded} km/h – Tennisspieler zwischen den Bällen` },
+    ];
+    return comparisons[Math.floor(Math.random() * comparisons.length)];
+  }
+  if (speedKmh >= 8) {
+    const comparisons = [
+      { emoji: "🐔", text: `Ø ${speedRounded} km/h – Huhn auf der Überholspur` },
+      { emoji: "🧹", text: `Ø ${speedRounded} km/h – Roomba im Turbomodus` },
+      { emoji: "🦔", text: `Ø ${speedRounded} km/h – Sonic wäre stolz (naja, fast)` },
+    ];
+    return comparisons[Math.floor(Math.random() * comparisons.length)];
+  }
+  // Slower speeds
+  const comparisons = [
+    { emoji: "🐢", text: `Ø ${speedRounded} km/h – Gemütlich wie eine Schildkröte mit Ziel` },
+    { emoji: "🦥", text: `Ø ${speedRounded} km/h – Faultier-approved Tempo` },
+    { emoji: "🚶", text: `Ø ${speedRounded} km/h – Power-Walking Deluxe` },
+  ];
+  return comparisons[Math.floor(Math.random() * comparisons.length)];
 }
 
 export default function RunningDeepDiveSlide({ stats }: RunningDeepDiveSlideProps) {
@@ -252,8 +266,8 @@ export default function RunningDeepDiveSlide({ stats }: RunningDeepDiveSlideProp
 
   const distanceComparison = getDistanceComparison(totalKm);
   const marathons = (totalKm / 42.195).toFixed(1);
-  const kipchogeComp = getKipchogeComparison(totalKm, avgPace);
-  const animalComp = getAnimalComparison(avgPace);
+  const kipchogeComp = getKipchogeComparison(totalKm, totalHours);
+  const speedComp = getSpeedComparison(avgPace);
 
   const formatPace = (pace: number) => {
     const mins = Math.floor(pace);
@@ -434,10 +448,10 @@ export default function RunningDeepDiveSlide({ stats }: RunningDeepDiveSlideProp
               <span className="text-white/40 text-xs">{kipchogeComp.subtext}</span>
             </div>
           )}
-          {animalComp && (
+          {speedComp && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-              <span className="text-base">{animalComp.emoji}</span>
-              <span className="text-white/60 text-xs">{animalComp.text}</span>
+              <span className="text-base">{speedComp.emoji}</span>
+              <span className="text-white/60 text-xs">{speedComp.text}</span>
             </div>
           )}
         </motion.div>

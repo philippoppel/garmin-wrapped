@@ -105,7 +105,7 @@ function DonutChart({ segments, size = 200 }: { segments: Array<{ percent: numbe
   let accumulatedPercent = 0;
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div className="relative w-full h-full">
       <svg viewBox="0 0 200 200" className="w-full h-full -rotate-90">
         <defs>
           <filter id="donutGlow">
@@ -307,14 +307,14 @@ export default function SportBreakdownSlide({ stats }: SportBreakdownSlideProps)
             transition={{ type: "spring", bounce: 0.3, delay: 0.2 }}
             className="relative flex-shrink-0 overflow-hidden"
           >
-            <div className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] md:w-[260px] md:h-[260px]">
+            <div className="w-[140px] h-[140px] sm:w-[180px] sm:h-[180px] md:w-[260px] md:h-[260px]">
               <DonutChart segments={chartSegments} size={260} />
             </div>
 
             {/* Center content */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <SportIcon type={topSport} className="w-6 h-6 sm:w-8 sm:h-8 md:w-16 md:h-16 mb-0 md:mb-2" />
-              <span className="text-white/60 text-[8px] sm:text-[10px] md:text-sm font-medium">#1</span>
+              <SportIcon type={topSport} className="w-8 h-8 sm:w-10 sm:h-10 md:w-16 md:h-16" />
+              <span className="text-white/60 text-[10px] sm:text-xs md:text-sm font-medium">#1</span>
             </div>
           </motion.div>
 

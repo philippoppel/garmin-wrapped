@@ -386,24 +386,27 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
       {/* Slide content */}
       <div ref={slideContainerRef} className="relative flex-1 overflow-hidden overflow-y-auto">
         {/* Tap zones for mobile navigation (Instagram Stories style) */}
-        <div className="absolute inset-0 z-10 flex md:hidden pointer-events-auto">
-          {/* Left tap zone - previous */}
-          <button
-            onClick={prevSlide}
-            disabled={currentSlide === 0}
-            className="w-1/4 h-full focus:outline-none active:bg-white/5 transition-colors"
-            aria-label="Vorherige Slide"
-          />
-          {/* Center zone - no action (allows content interaction) */}
-          <div className="w-2/4 h-full pointer-events-none" />
-          {/* Right tap zone - next */}
-          <button
-            onClick={nextSlide}
-            disabled={currentSlide === totalSlides - 1}
-            className="w-1/4 h-full focus:outline-none active:bg-white/5 transition-colors"
-            aria-label="Nächste Slide"
-          />
-        </div>
+        {/* Hidden on last slide (FinalShareSlide) to allow full interaction */}
+        {currentSlide !== totalSlides - 1 && (
+          <div className="absolute inset-0 z-10 flex md:hidden pointer-events-auto">
+            {/* Left tap zone - previous */}
+            <button
+              onClick={prevSlide}
+              disabled={currentSlide === 0}
+              className="w-1/4 h-full focus:outline-none active:bg-white/5 transition-colors"
+              aria-label="Vorherige Slide"
+            />
+            {/* Center zone - no action (allows content interaction) */}
+            <div className="w-2/4 h-full pointer-events-none" />
+            {/* Right tap zone - next */}
+            <button
+              onClick={nextSlide}
+              disabled={currentSlide === totalSlides - 1}
+              className="w-1/4 h-full focus:outline-none active:bg-white/5 transition-colors"
+              aria-label="Nächste Slide"
+            />
+          </div>
+        )}
 
         {/* Swipe direction indicators */}
         {isSwiping && (
