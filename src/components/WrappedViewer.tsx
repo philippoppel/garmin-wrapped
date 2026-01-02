@@ -263,30 +263,33 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
         </AnimatePresence>
       </div>
 
-      {/* Navigation - fixed at bottom with glass effect */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-lg border-t border-white/10 safe-area-bottom">
-        <div className="px-3 py-3 md:px-8 md:py-4">
-          {/* Progress bar for mobile, dots for desktop */}
-          <div className="mb-3">
-            {/* Mobile: Progress bar */}
+      {/* Navigation - fixed at bottom with elegant glass effect */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom">
+        {/* Gradient fade from transparent to subtle dark */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/30 to-transparent pointer-events-none" />
+
+        <div className="relative px-4 py-4 md:px-8 md:py-5">
+          {/* Progress indicator */}
+          <div className="mb-4">
+            {/* Mobile: Elegant progress bar */}
             <div className="md:hidden">
-              <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-0.5 bg-white/10 rounded-full overflow-hidden mx-auto max-w-xs">
                 <div
-                  className="h-full bg-gradient-to-r from-garmin-blue to-purple-500 transition-all duration-300"
+                  className="h-full bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-500 ease-out"
                   style={{ width: `${((currentSlide + 1) / totalSlides) * 100}%` }}
                 />
               </div>
             </div>
-            {/* Desktop: Dots */}
-            <div className="hidden md:flex justify-center gap-2">
+            {/* Desktop: Minimal dots */}
+            <div className="hidden md:flex justify-center gap-1.5">
               {slideConfigs.map((config, index) => (
                 <button
                   key={config.key}
                   onClick={() => goToSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-all ${
+                  className={`rounded-full transition-all duration-300 ${
                     index === currentSlide
-                      ? "bg-white w-6"
-                      : "bg-white/30 hover:bg-white/50"
+                      ? "w-5 h-1.5 bg-gradient-to-r from-cyan-400 to-purple-500"
+                      : "w-1.5 h-1.5 bg-white/20 hover:bg-white/40"
                   }`}
                 />
               ))}
@@ -294,17 +297,17 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
           </div>
 
           {/* Navigation buttons */}
-          <div className="flex items-center justify-between max-w-lg mx-auto">
+          <div className="flex items-center justify-between max-w-md mx-auto">
             <button
               onClick={prevSlide}
               disabled={currentSlide === 0}
-              className={`p-3 md:p-3 rounded-full transition-all touch-manipulation ${
+              className={`p-2 rounded-full transition-all duration-200 touch-manipulation ${
                 currentSlide === 0
-                  ? "text-white/20"
-                  : "text-white/70 hover:text-white active:bg-white/20 hover:bg-white/10"
+                  ? "text-white/10"
+                  : "text-white/50 hover:text-white hover:bg-white/10"
               }`}
             >
-              <ChevronLeft className="w-7 h-7 md:w-6 md:h-6" />
+              <ChevronLeft className="w-6 h-6" />
             </button>
 
             {/* Center buttons - show export on last slide */}
@@ -324,22 +327,25 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
             ) : (
               <button
                 onClick={nextSlide}
-                className="px-5 py-2.5 bg-white/10 rounded-full text-white/90 hover:bg-white/20 active:bg-white/30 text-sm font-medium transition-all touch-manipulation"
+                className="group px-6 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-white/80 hover:text-white hover:bg-white/10 hover:border-white/20 text-sm font-medium transition-all duration-200 touch-manipulation"
               >
-                Weiter
+                <span className="flex items-center gap-1.5">
+                  Weiter
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                </span>
               </button>
             )}
 
             <button
               onClick={nextSlide}
               disabled={currentSlide === totalSlides - 1}
-              className={`p-3 md:p-3 rounded-full transition-all touch-manipulation ${
+              className={`p-2 rounded-full transition-all duration-200 touch-manipulation ${
                 currentSlide === totalSlides - 1
-                  ? "text-white/20"
-                  : "text-white/70 hover:text-white active:bg-white/20 hover:bg-white/10"
+                  ? "text-white/10"
+                  : "text-white/50 hover:text-white hover:bg-white/10"
               }`}
             >
-              <ChevronRight className="w-7 h-7 md:w-6 md:h-6" />
+              <ChevronRight className="w-6 h-6" />
             </button>
           </div>
         </div>
