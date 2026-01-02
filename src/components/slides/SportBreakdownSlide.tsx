@@ -299,27 +299,27 @@ export default function SportBreakdownSlide({ stats }: SportBreakdownSlideProps)
         </motion.div>
 
         {/* Main Content: Donut + Legend */}
-        <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 mb-4 md:mb-8">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-12 mb-4 md:mb-8">
           {/* Donut Chart */}
           <motion.div
             initial={{ scale: 0, rotate: -90 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: "spring", bounce: 0.3, delay: 0.2 }}
-            className="relative"
+            className="relative flex-shrink-0 overflow-hidden"
           >
-            <div className="w-[180px] h-[180px] sm:w-[220px] sm:h-[220px] md:w-[260px] md:h-[260px]">
+            <div className="w-[160px] h-[160px] sm:w-[200px] sm:h-[200px] md:w-[260px] md:h-[260px]">
               <DonutChart segments={chartSegments} size={260} />
             </div>
 
             {/* Center content */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <SportIcon type={topSport} className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 mb-1 md:mb-2" />
-              <span className="text-white/60 text-xs md:text-sm font-medium">#1</span>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <SportIcon type={topSport} className="w-8 h-8 sm:w-10 sm:h-10 md:w-16 md:h-16 mb-0.5 md:mb-2" />
+              <span className="text-white/60 text-[10px] md:text-sm font-medium">#1</span>
             </div>
           </motion.div>
 
           {/* Legend */}
-          <div className="space-y-2 md:space-y-3 w-full max-w-xs sm:max-w-sm md:max-w-none md:w-auto">
+          <div className="relative z-10 space-y-1.5 md:space-y-3 w-full max-w-xs sm:max-w-sm md:max-w-none md:w-auto">
             {expandedSports.slice(0, 5).map((item, index) => {
               const percent = Math.round((item.count / totalActivities) * 100);
 
@@ -329,29 +329,29 @@ export default function SportBreakdownSlide({ stats }: SportBreakdownSlideProps)
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + index * 0.08 }}
-                  className="flex items-center gap-2 md:gap-3"
+                  className="flex items-center gap-1.5 md:gap-3 bg-black/20 rounded-lg px-2 py-1.5 md:px-0 md:py-0 md:bg-transparent"
                 >
                   {/* Color dot */}
                   <div
-                    className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full flex-shrink-0"
+                    className="w-2 h-2 md:w-3 md:h-3 rounded-full flex-shrink-0"
                     style={{ backgroundColor: item.color }}
                   />
                   {/* Icon */}
                   <div className="flex-shrink-0">
                     {item.originalType ? (
-                      <SportIcon type={item.originalType} className="w-5 h-5 md:w-6 md:h-6" />
+                      <SportIcon type={item.originalType} className="w-4 h-4 md:w-6 md:h-6" />
                     ) : (
-                      <div className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center">
-                        <div className="w-3 h-3 md:w-4 md:h-4 rounded-full" style={{ backgroundColor: item.color, opacity: 0.6 }} />
+                      <div className="w-4 h-4 md:w-6 md:h-6 flex items-center justify-center">
+                        <div className="w-2.5 h-2.5 md:w-4 md:h-4 rounded-full" style={{ backgroundColor: item.color, opacity: 0.6 }} />
                       </div>
                     )}
                   </div>
-                  {/* Name */}
-                  <span className="text-white text-sm md:text-base font-medium text-left truncate min-w-0 flex-1">{item.name}</span>
+                  {/* Name - fixed width on mobile */}
+                  <span className="text-white text-xs md:text-base font-medium w-20 md:w-auto truncate">{item.name}</span>
                   {/* Count */}
-                  <span className="text-white text-sm md:text-base font-bold tabular-nums flex-shrink-0">{item.count}x</span>
+                  <span className="text-white text-xs md:text-base font-bold tabular-nums ml-auto">{item.count}x</span>
                   {/* Percent */}
-                  <span className="text-white/50 text-xs md:text-sm tabular-nums flex-shrink-0">({percent}%)</span>
+                  <span className="text-white/50 text-[10px] md:text-sm tabular-nums">({percent}%)</span>
                 </motion.div>
               );
             })}
