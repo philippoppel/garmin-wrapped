@@ -270,47 +270,185 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [nextSlide, prevSlide]);
 
-  // Touch swipe
-  const [touchStart, setTouchStart] = useState<number | null>(null);
+  // Enhanced touch/swipe handling
+  const touchRef = useRef<{
+    startX: number;
+    startY: number;
+    startTime: number;
+    isScrolling: boolean | null;
+  } | null>(null);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.touches[0].clientX);
-  };
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    // Ignore multi-touch
+    if (e.touches.length !== 1) return;
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart === null) return;
+    const touch = e.touches[0];
+    touchRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      startTime: Date.now(),
+      isScrolling: null, // Will be determined on first move
+    };
+    setSwipeOffset(0);
+  }, []);
 
-    const touchEnd = e.changedTouches[0].clientX;
-    const diff = touchStart - touchEnd;
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!touchRef.current || e.touches.length !== 1) return;
 
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) {
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - touchRef.current.startX;
+    const deltaY = touch.clientY - touchRef.current.startY;
+
+    // Determine scroll direction on first significant move
+    if (touchRef.current.isScrolling === null) {
+      // If vertical movement is greater, user is scrolling content
+      touchRef.current.isScrolling = Math.abs(deltaY) > Math.abs(deltaX);
+    }
+
+    // If scrolling vertically, don't handle as swipe
+    if (touchRef.current.isScrolling) return;
+
+    // Prevent default to stop page scroll during horizontal swipe
+    e.preventDefault();
+
+    // Apply resistance at edges
+    let offset = deltaX;
+    if ((currentSlide === 0 && deltaX > 0) ||
+        (currentSlide === totalSlides - 1 && deltaX < 0)) {
+      offset = deltaX * 0.3; // Resistance effect
+    }
+
+    setSwipeOffset(offset);
+    setIsSwiping(true);
+  }, [currentSlide, totalSlides]);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchRef.current) return;
+
+    const deltaX = swipeOffset;
+    const deltaTime = Date.now() - touchRef.current.startTime;
+    const velocity = Math.abs(deltaX) / deltaTime;
+
+    // Reset visual offset
+    setSwipeOffset(0);
+    setIsSwiping(false);
+
+    // Only process if it was a horizontal swipe
+    if (touchRef.current.isScrolling) {
+      touchRef.current = null;
+      return;
+    }
+
+    // Threshold: Either moved enough distance OR swiped fast enough
+    const distanceThreshold = 80;
+    const velocityThreshold = 0.3;
+    const shouldNavigate = Math.abs(deltaX) > distanceThreshold || velocity > velocityThreshold;
+
+    if (shouldNavigate) {
+      if (deltaX < 0 && currentSlide < totalSlides - 1) {
         nextSlide();
-      } else {
+      } else if (deltaX > 0 && currentSlide > 0) {
         prevSlide();
       }
     }
 
-    setTouchStart(null);
-  };
+    touchRef.current = null;
+  }, [swipeOffset, currentSlide, totalSlides, nextSlide, prevSlide]);
+
+  // Prevent iOS bounce/rubber-band effect during swipe
+  useEffect(() => {
+    const preventBounce = (e: TouchEvent) => {
+      if (isSwiping) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('touchmove', preventBounce, { passive: false });
+    return () => document.removeEventListener('touchmove', preventBounce);
+  }, [isSwiping]);
 
   const isLastSlide = currentSlide === totalSlides - 1;
 
   return (
     <div
-      className="relative w-full h-screen overflow-hidden flex flex-col"
+      className="relative w-full h-screen overflow-hidden flex flex-col select-none"
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      style={{ touchAction: 'pan-y' }} // Allow vertical scroll, handle horizontal ourselves
     >
       {/* Slide content */}
-      <div className="relative flex-1">
+      <div className="relative flex-1 overflow-hidden">
+        {/* Tap zones for mobile navigation (Instagram Stories style) */}
+        <div className="absolute inset-0 z-10 flex md:hidden pointer-events-auto">
+          {/* Left tap zone - previous */}
+          <button
+            onClick={prevSlide}
+            disabled={currentSlide === 0}
+            className="w-1/4 h-full focus:outline-none active:bg-white/5 transition-colors"
+            aria-label="Vorherige Slide"
+          />
+          {/* Center zone - no action (allows content interaction) */}
+          <div className="w-2/4 h-full pointer-events-none" />
+          {/* Right tap zone - next */}
+          <button
+            onClick={nextSlide}
+            disabled={currentSlide === totalSlides - 1}
+            className="w-1/4 h-full focus:outline-none active:bg-white/5 transition-colors"
+            aria-label="Nächste Slide"
+          />
+        </div>
+
+        {/* Swipe direction indicators */}
+        {isSwiping && (
+          <>
+            {/* Left indicator (previous) */}
+            <motion.div
+              className="absolute left-0 top-0 bottom-0 w-16 z-20 pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={{
+                opacity: swipeOffset > 30 && currentSlide > 0 ? 0.8 : 0,
+              }}
+            >
+              <div className="h-full flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <ChevronLeft className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </motion.div>
+            {/* Right indicator (next) */}
+            <motion.div
+              className="absolute right-0 top-0 bottom-0 w-16 z-20 pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={{
+                opacity: swipeOffset < -30 && currentSlide < totalSlides - 1 ? 0.8 : 0,
+              }}
+            >
+              <div className="h-full flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <ChevronRight className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.div
             key={currentSlide}
             initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
-            animate={{ opacity: 1, x: 0 }}
+            animate={{
+              opacity: 1,
+              x: isSwiping ? swipeOffset : 0,
+              scale: isSwiping ? 0.98 : 1,
+            }}
             exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
+            transition={{
+              duration: isSwiping ? 0 : 0.2,
+              ease: "easeOut"
+            }}
             className="absolute inset-0"
           >
             <Suspense fallback={<SlideLoader />}>
@@ -357,14 +495,16 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
 
           {/* Navigation buttons */}
           <div className="flex items-center justify-between max-w-md mx-auto">
+            {/* Previous button - larger touch target on mobile */}
             <button
               onClick={prevSlide}
               disabled={currentSlide === 0}
-              className={`p-2 rounded-full transition-all duration-200 touch-manipulation ${
+              className={`p-3 -m-1 rounded-full transition-all duration-200 touch-manipulation active:scale-95 ${
                 currentSlide === 0
                   ? "text-white/10"
-                  : "text-white/50 hover:text-white hover:bg-white/10"
+                  : "text-white/50 hover:text-white hover:bg-white/10 active:bg-white/20"
               }`}
+              aria-label="Vorherige Slide"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
@@ -386,7 +526,8 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
             ) : (
               <button
                 onClick={nextSlide}
-                className="group px-6 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-white/80 hover:text-white hover:bg-white/10 hover:border-white/20 text-sm font-medium transition-all duration-200 touch-manipulation"
+                className="group px-6 py-2.5 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 text-white/80 hover:text-white hover:bg-white/10 hover:border-white/20 active:bg-white/20 active:scale-95 text-sm font-medium transition-all duration-200 touch-manipulation"
+                aria-label="Weiter"
               >
                 <span className="flex items-center gap-1.5">
                   Weiter
@@ -395,14 +536,16 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
               </button>
             )}
 
+            {/* Next button - larger touch target on mobile */}
             <button
               onClick={nextSlide}
               disabled={currentSlide === totalSlides - 1}
-              className={`p-2 rounded-full transition-all duration-200 touch-manipulation ${
+              className={`p-3 -m-1 rounded-full transition-all duration-200 touch-manipulation active:scale-95 ${
                 currentSlide === totalSlides - 1
                   ? "text-white/10"
-                  : "text-white/50 hover:text-white hover:bg-white/10"
+                  : "text-white/50 hover:text-white hover:bg-white/10 active:bg-white/20"
               }`}
+              aria-label="Nächste Slide"
             >
               <ChevronRight className="w-6 h-6" />
             </button>
