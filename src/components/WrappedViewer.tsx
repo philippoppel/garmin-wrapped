@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect, useMemo, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Download, Share2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Share2, Home } from "lucide-react";
+import Link from "next/link";
 import { YearStats } from "@/lib/types/activity";
 import Button from "@/components/ui/Button";
 
@@ -351,9 +352,21 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
         </div>
       </div>
 
-      {/* Slide counter - more visible on mobile */}
-      <div className="fixed top-3 right-3 md:top-4 md:right-4 z-50 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-sm text-white/50 text-xs font-medium">
-        {currentSlide + 1} / {totalSlides}
+      {/* Top bar - Home button and slide counter */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3 py-3 md:px-4 md:py-4">
+        {/* Home button */}
+        <Link
+          href="/"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-sm text-white/50 hover:text-white hover:bg-black/50 transition-all text-xs font-medium"
+        >
+          <Home className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Home</span>
+        </Link>
+
+        {/* Slide counter */}
+        <div className="px-2.5 py-1 rounded-full bg-black/30 backdrop-blur-sm text-white/50 text-xs font-medium">
+          {currentSlide + 1} / {totalSlides}
+        </div>
       </div>
     </div>
   );
