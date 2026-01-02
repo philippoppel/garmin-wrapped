@@ -367,35 +367,59 @@ async function fetchWellnessData(client: any, year: number) {
     }
   }
 
-  // Fetch REAL floor data - ONE aggregated API call for the entire year
-  console.log("Fetching floor data (aggregated)...");
-  const yearStart = `${year}-01-01`;
-  const yearEnd = `${year}-12-31`;
+  // Fetch REAL floor data - try dailies endpoint first
+  console.log("Fetching floor data...");
 
+  // Try the dailies endpoint which returns all daily summaries including floors
   try {
-    // Try aggregated floors endpoint (similar to steps)
-    const floorsData = await client.get(
-      `https://connect.garmin.com/modern/proxy/usersummary-service/stats/floors/daily/${yearStart}/${yearEnd}`,
+    const dailiesData = await client.get(
+      `https://connect.garmin.com/modern/proxy/usersummary-service/usersummary/dailies?calendarStartDate=${year}-01-01&calendarEndDate=${year}-12-31`,
       {}
     ).catch(() => null);
 
-    if (floorsData && Array.isArray(floorsData) && floorsData.length > 0) {
-      for (const day of floorsData) {
-        if (day.floorsClimbed > 0 || day.floors > 0) {
+    if (dailiesData && Array.isArray(dailiesData) && dailiesData.length > 0) {
+      console.log(`  Dailies endpoint returned ${dailiesData.length} days`);
+      for (const day of dailiesData) {
+        const floors = day.floorsClimbed ?? day.floorsAscended ?? 0;
+        if (floors > 0) {
           wellnessData.floorSamples.push({
             date: new Date(day.calendarDate),
-            floors: day.floorsClimbed || day.floors || 0,
+            floors: floors,
           });
         }
       }
       wellnessData.floorDataAvailable = wellnessData.floorSamples.length > 0;
-      console.log(`  Got ${wellnessData.floorSamples.length} days of floor data from aggregated endpoint`);
+      console.log(`  Got ${wellnessData.floorSamples.length} days with floor data`);
     }
   } catch (e) {
-    console.log("  Aggregated floors endpoint not available");
+    console.log("  Dailies endpoint failed");
   }
 
-  console.log(`Floor data: ${wellnessData.floorSamples.length} days, available: ${wellnessData.floorDataAvailable}`);
+  // Fallback: try 7 recent individual daily summaries
+  if (!wellnessData.floorDataAvailable) {
+    console.log("  Trying recent individual daily summaries...");
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      if (d.getFullYear() !== year) continue;
+
+      const dateStr = d.toISOString().split("T")[0];
+      try {
+        const summary = await client.get(
+          `https://connect.garmin.com/modern/proxy/usersummary-service/usersummary/daily/${dateStr}`,
+          {}
+        ).catch(() => null);
+
+        if (summary && typeof summary.floorsClimbed === "number" && summary.floorsClimbed > 0) {
+          wellnessData.floorSamples.push({ date: d, floors: summary.floorsClimbed });
+          wellnessData.floorDataAvailable = true;
+          console.log(`    ${dateStr}: ${summary.floorsClimbed} floors`);
+        }
+      } catch (e) { /* continue */ }
+    }
+  }
+
+  console.log(`Floor data result: ${wellnessData.floorSamples.length} samples, available: ${wellnessData.floorDataAvailable}`);
 
   // Calculate monthly averages
   for (let m = 0; m < 12; m++) {
