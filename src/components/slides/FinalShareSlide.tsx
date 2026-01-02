@@ -10,7 +10,6 @@ import {
   Target, Award, Dumbbell, Waves, Check, Home
 } from "lucide-react";
 import Link from "next/link";
-import SlideWrapper from "./SlideWrapper";
 import { YearStats } from "@/lib/types/activity";
 import html2canvas from "html2canvas";
 import GIF from "gif.js";
@@ -904,10 +903,10 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
   };
 
   return (
-    <SlideWrapper gradient="from-[#0f0515] via-[#150a20] to-[#0a0510]">
+    <div className="slide-container-scroll bg-gradient-to-br from-[#0f0515] via-[#150a20] to-[#0a0510]">
       <PartyBackground />
 
-      <div className="relative z-10 w-full h-full flex flex-col lg:flex-row items-center justify-start lg:justify-center gap-4 lg:gap-16 px-4 py-2 lg:py-0 overflow-y-auto">
+      <div className="relative z-10 w-full flex flex-col lg:flex-row items-center justify-start lg:justify-center gap-4 lg:gap-12 px-4">
         {/* Left Side - Controls (on desktop) / Top (on mobile) */}
         <div className="w-full lg:w-auto lg:max-w-md flex flex-col items-center lg:items-start flex-shrink-0">
           {/* Header - Compact on mobile */}
@@ -1010,7 +1009,7 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
               </div>
             </div>
 
-            <div className="bg-white/5 rounded-xl lg:rounded-2xl border border-white/10 p-2 lg:p-3 max-h-[140px] lg:max-h-[280px] overflow-y-auto">
+            <div className="bg-white/5 rounded-xl lg:rounded-2xl border border-white/10 p-2 lg:p-3 max-h-[100px] sm:max-h-[120px] lg:max-h-[280px] overflow-y-auto">
               {/* Categories */}
               {(["distance", "time", "health", "fun", "records"] as const).map(category => {
                 const categoryStats = CUSTOM_STATS.filter(s => s.category === category && s.available(stats));
@@ -1187,6 +1186,6 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
           </Link>
         </motion.div>
       </div>
-    </SlideWrapper>
+    </div>
   );
 }
