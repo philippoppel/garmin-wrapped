@@ -174,33 +174,32 @@ function getDistanceComparison(km: number): string {
 
 // Kipchoge comparison - he runs ~12,000 km/year, marathon WR pace 2:52 min/km
 function getKipchogeComparison(totalKm: number, avgPaceMinPerKm: number): { text: string; subtext: string } | null {
-  // Kipchoge yearly km
-  const kipchogeYearlyKm = 12000;
-  const percentOfKipchoge = (totalKm / kipchogeYearlyKm) * 100;
-
   // Kipchoge marathon WR pace: 2:00:35 for 42.195km = ~2.85 min/km
   const kipchogePace = 2.85;
 
   if (avgPaceMinPerKm > 0 && avgPaceMinPerKm < 10) {
-    // When you finish 5K, where would Kipchoge be?
+    // On a 400m track: how many times would Kipchoge lap you during your 5K?
     const your5kTime = avgPaceMinPerKm * 5; // minutes for your 5K
-    const kipchogeDistanceInYourTime = (your5kTime / kipchogePace); // km Kipchoge runs in your 5K time
+    const kipchogeDistanceKm = your5kTime / kipchogePace; // km Kipchoge runs in your 5K time
 
-    if (kipchogeDistanceInYourTime > 5) {
-      const kmAhead = kipchogeDistanceInYourTime - 5;
-      if (kmAhead >= 1) {
-        return {
-          text: `+${kmAhead.toFixed(1)} km`,
-          subtext: "wäre Kipchoge bei deinem 5K-Ziel"
-        };
-      } else {
-        return {
-          text: `+${Math.round(kmAhead * 1000)}m`,
-          subtext: "wäre Kipchoge bei deinem 5K-Ziel"
-        };
-      }
+    // Number of 400m laps each person completes
+    const yourLaps = 5 / 0.4; // 12.5 laps
+    const kipchogeLaps = kipchogeDistanceKm / 0.4;
+
+    // How many times does he pass you (lap you)?
+    const timesLapped = Math.floor(kipchogeLaps - yourLaps);
+
+    if (timesLapped >= 1) {
+      return {
+        text: `${timesLapped}×`,
+        subtext: "hätte Kipchoge dich überrundet"
+      };
     }
   }
+
+  // Fallback: percentage of Kipchoge's yearly km
+  const kipchogeYearlyKm = 12000;
+  const percentOfKipchoge = (totalKm / kipchogeYearlyKm) * 100;
 
   return {
     text: `${percentOfKipchoge.toFixed(1)}%`,

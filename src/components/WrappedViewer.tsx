@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo, lazy, Suspense } from "react";
+import { useState, useCallback, useEffect, useMemo, lazy, Suspense, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Download, Share2, Home } from "lucide-react";
 import Link from "next/link";
@@ -42,6 +42,62 @@ function SlideLoader() {
       />
     </div>
   );
+}
+
+// Wrapper that detects empty/null slides and shows skip UI
+function SlideGuard({
+  children,
+  onEmpty
+}: {
+  children: React.ReactNode;
+  onEmpty: () => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isEmpty, setIsEmpty] = useState(false);
+  const hasChecked = useRef(false);
+
+  useEffect(() => {
+    // Check after render if the container is empty
+    if (hasChecked.current) return;
+
+    const timer = setTimeout(() => {
+      if (containerRef.current) {
+        // Check if the slide rendered anything meaningful
+        const hasContent = containerRef.current.children.length > 0 &&
+          containerRef.current.innerHTML.trim().length > 50;
+
+        if (!hasContent) {
+          setIsEmpty(true);
+          // Auto-skip after showing message
+          setTimeout(onEmpty, 400);
+        }
+        hasChecked.current = true;
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [onEmpty, children]);
+
+  if (isEmpty) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-garmin-dark to-[#0f1629]">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <motion.div
+            className="w-8 h-8 border-2 border-white/20 border-t-white/50 rounded-full mx-auto mb-3"
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          />
+          <p className="text-white/30 text-sm">Weiter...</p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return <div ref={containerRef} className="contents">{children}</div>;
 }
 
 interface WrappedViewerProps {
@@ -258,7 +314,9 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
             className="absolute inset-0"
           >
             <Suspense fallback={<SlideLoader />}>
-              {slideConfigs[currentSlide].render()}
+              <SlideGuard key={`guard-${currentSlide}`} onEmpty={nextSlide}>
+                {slideConfigs[currentSlide].render()}
+              </SlideGuard>
             </Suspense>
           </motion.div>
         </AnimatePresence>
