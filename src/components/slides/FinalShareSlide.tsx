@@ -1149,140 +1149,112 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
       </div>
 
       {/* ============================================ */}
-      {/* MOBILE LAYOUT - Completely Redesigned */}
+      {/* MOBILE LAYOUT - Simple & Robust */}
       {/* ============================================ */}
-      <div className="lg:hidden slide-container-scroll bg-gradient-to-br from-[#0f0515] via-[#150a20] to-[#0a0510]">
-        <div className="w-full max-w-md mx-auto px-4 pt-2 pb-6">
+      <div className="lg:hidden min-h-screen bg-gradient-to-br from-[#0f0515] via-[#150a20] to-[#0a0510] pb-8">
+        <div className="w-full px-4 pt-4">
           {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-4"
-          >
-            <h1 className="text-xl font-bold text-white">Teile dein Jahr</h1>
-            <p className="text-white/40 text-xs">Erstelle deine Share Card</p>
-          </motion.div>
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 mb-3">
+              <Share2 className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-white">Teile dein Jahr!</h1>
+            <p className="text-white/50 text-sm mt-1">Erstelle deine persönliche Share Card</p>
+          </div>
 
-          {/* Card Preview - Centered with glow */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex justify-center mb-5"
-          >
-            <div className="relative">
+          {/* Card Preview - Full width responsive */}
+          <div className="flex justify-center mb-6">
+            <div className="relative w-full max-w-[240px]">
               <div
-                className="absolute -inset-4 rounded-3xl blur-2xl opacity-40"
+                className="absolute -inset-3 rounded-3xl blur-2xl opacity-50"
                 style={{ background: "linear-gradient(135deg, #8B5CF6, #06B6D4)" }}
               />
               <div
                 ref={mobileCardRef}
-                className="relative overflow-hidden rounded-2xl shadow-2xl"
-                style={{ width: '200px', height: '356px' }}
+                className="relative overflow-hidden rounded-2xl shadow-2xl w-full"
+                style={{ aspectRatio: '9/16' }}
               >
                 {renderCard()}
               </div>
+              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/50 backdrop-blur-sm border border-white/20">
+                <span className="text-white/70 text-[10px] font-medium">Live-Vorschau</span>
+              </div>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Photo/Video Upload */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-4"
-          >
+          {/* Photo/Video Upload - Simple */}
+          <div className="mb-6">
+            <p className="text-white/50 text-xs uppercase tracking-wider mb-2 font-medium">Hintergrundbild</p>
             {!profileImage && !profileVideo ? (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full p-3 rounded-xl bg-white/5 border border-dashed border-white/20 flex items-center gap-3 active:scale-[0.98] transition"
+                className="w-full p-4 rounded-xl bg-white/5 border-2 border-dashed border-white/20 flex items-center justify-center gap-3 active:bg-white/10 transition"
               >
-                <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-                  <Camera className="w-5 h-5 text-white/60" />
-                </div>
-                <div className="text-left flex-1">
-                  <span className="text-white text-sm font-medium block">Foto/Video hinzufügen</span>
-                  <span className="text-white/40 text-xs">Optional • Video wird zu GIF</span>
-                </div>
+                <Camera className="w-6 h-6 text-white/50" />
+                <span className="text-white/70 text-sm font-medium">Foto oder Video auswählen</span>
               </button>
             ) : (
-              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/10">
-                <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 border border-white/20">
                   {mediaType === "video" && profileVideo ? (
                     <video src={profileVideo} className="w-full h-full object-cover" autoPlay loop muted playsInline />
                   ) : profileImage ? (
                     <img src={profileImage} alt="" className="w-full h-full object-cover" />
                   ) : null}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-medium flex items-center gap-1.5">
-                    {mediaType === "video" ? <Video className="w-3.5 h-3.5" /> : <Image className="w-3.5 h-3.5" />}
-                    {mediaType === "video" ? "Video" : "Foto"}
+                <div className="flex-1">
+                  <p className="text-white text-sm font-medium flex items-center gap-2">
+                    {mediaType === "video" ? <Video className="w-4 h-4 text-cyan-400" /> : <Image className="w-4 h-4 text-cyan-400" />}
+                    {mediaType === "video" ? "Video geladen" : "Foto geladen"}
                   </p>
+                  <p className="text-white/40 text-xs mt-0.5">Tippe zum Ändern</p>
                 </div>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-3 py-1.5 rounded-lg bg-white/10 text-white/70 text-xs active:scale-95 transition"
+                  className="p-2 rounded-lg bg-white/10 text-white/70 active:bg-white/20 transition"
                 >
-                  Ändern
+                  <Camera className="w-5 h-5" />
                 </button>
                 <button
                   onClick={removeMedia}
-                  className="p-1.5 rounded-lg bg-red-500/20 text-red-400 active:scale-95 transition"
+                  className="p-2 rounded-lg bg-red-500/20 text-red-400 active:bg-red-500/30 transition"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
             )}
-          </motion.div>
+          </div>
 
-          {/* Stats Selection */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mb-5"
-          >
+          {/* Stats Selection - Simplified */}
+          <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-white text-sm font-medium">Wähle 5 Stats</p>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-white/40 bg-white/10 px-2 py-0.5 rounded-full">{selectedCustomStats.length}/5</span>
-                <button
-                  onClick={randomizeStats}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs bg-purple-500/20 border border-purple-500/30 text-purple-300 active:scale-95 transition"
-                >
-                  <Sparkles className="w-3 h-3" />
-                  Mix
-                </button>
-              </div>
+              <p className="text-white/50 text-xs uppercase tracking-wider font-medium">Deine Stats ({selectedCustomStats.length}/5)</p>
+              <button
+                onClick={randomizeStats}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-purple-500/20 border border-purple-500/40 text-purple-300 active:bg-purple-500/30 transition font-medium"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Zufällig
+              </button>
             </div>
 
-            {/* Categories */}
-            <div className="space-y-3">
-              {(["distance", "time", "health", "fun", "records"] as const).map(category => {
+            {/* Scrollable stat chips */}
+            <div className="bg-white/5 rounded-2xl border border-white/10 p-4 max-h-[300px] overflow-y-auto">
+              {(["distance", "health", "fun", "records", "time"] as const).map(category => {
                 const categoryStats = CUSTOM_STATS.filter(s => s.category === category && s.available(stats));
                 if (categoryStats.length === 0) return null;
 
                 const categoryLabels = {
-                  distance: "Distanz & Aktivität",
-                  time: "Zeit & Streak",
+                  distance: "Distanz",
+                  time: "Zeit",
                   health: "Gesundheit",
                   fun: "Fun Facts",
                   records: "Rekorde",
                 };
 
-                const categoryColors = {
-                  distance: "from-cyan-500/20 to-blue-500/20 border-cyan-500/30",
-                  time: "from-purple-500/20 to-pink-500/20 border-purple-500/30",
-                  health: "from-red-500/20 to-orange-500/20 border-red-500/30",
-                  fun: "from-yellow-500/20 to-green-500/20 border-yellow-500/30",
-                  records: "from-amber-500/20 to-orange-500/20 border-amber-500/30",
-                };
-
                 return (
-                  <div key={category} className={`rounded-xl bg-gradient-to-r ${categoryColors[category]} border p-3`}>
-                    <div className="text-[10px] text-white/50 uppercase tracking-wider mb-2 font-medium">
-                      {categoryLabels[category]}
-                    </div>
+                  <div key={category} className="mb-4 last:mb-0">
+                    <p className="text-white/30 text-[10px] uppercase tracking-wider mb-2 font-semibold">{categoryLabels[category]}</p>
                     <div className="flex flex-wrap gap-2">
                       {categoryStats.map(stat => {
                         const isSelected = selectedCustomStats.includes(stat.id);
@@ -1293,16 +1265,16 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
                             key={stat.id}
                             onClick={() => toggleStat(stat.id)}
                             disabled={!isSelected && selectedCustomStats.length >= 5}
-                            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all active:scale-95 ${
+                            className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95 ${
                               isSelected
-                                ? "bg-cyan-500/30 border-2 border-cyan-400 text-cyan-200 shadow-lg shadow-cyan-500/20"
-                                : "bg-black/20 border border-white/10 text-white/70 disabled:opacity-30"
+                                ? "bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border-2 border-cyan-400 text-white shadow-lg shadow-cyan-500/20"
+                                : "bg-black/30 border border-white/10 text-white/60 disabled:opacity-25"
                             }`}
                           >
-                            {isSelected && <Check className="w-3.5 h-3.5" />}
-                            <span className="[&>svg]:w-4 [&>svg]:h-4">{stat.icon}</span>
+                            {isSelected && <Check className="w-4 h-4 text-cyan-300" />}
+                            <span className="[&>svg]:w-4 [&>svg]:h-4 text-white/50">{stat.icon}</span>
                             <span>{stat.label}</span>
-                            {value && <span className="text-white/40 text-[10px]">({value})</span>}
+                            {value && <span className="text-white/40 text-xs">({value})</span>}
                           </button>
                         );
                       })}
@@ -1311,18 +1283,15 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
                 );
               })}
             </div>
-          </motion.div>
+          </div>
 
-          {/* Download Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            {/* Primary Download Button */}
             <button
               onClick={handleDownload}
               disabled={isGenerating}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition disabled:opacity-70 relative overflow-hidden shadow-xl shadow-orange-500/30"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-lg flex items-center justify-center gap-3 active:scale-[0.98] transition disabled:opacity-70 relative overflow-hidden shadow-2xl"
             >
               {isGenerating && generatingProgress > 0 && (
                 <div
@@ -1330,24 +1299,23 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
                   style={{ width: `${generatingProgress}%` }}
                 />
               )}
-              <span className="relative flex items-center gap-2">
+              <span className="relative flex items-center gap-3">
                 {isGenerating ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-6 h-6 animate-spin" />
                 ) : (
-                  <Download className="w-5 h-5" />
+                  <Download className="w-6 h-6" />
                 )}
                 {isGenerating
-                  ? `Erstelle ${mediaType === "video" ? "GIF" : "Bild"}... ${generatingProgress}%`
-                  : mediaType === "video"
-                    ? "Download als GIF"
-                    : "Download für Instagram"
+                  ? `${generatingProgress}% erstellt...`
+                  : "Bild speichern"
                 }
               </span>
             </button>
-            <p className="text-center text-white/30 text-xs mt-2">
-              1080 × 1920px • Instagram Stories
+
+            <p className="text-center text-white/40 text-xs">
+              Das Bild wird in deiner Galerie gespeichert
             </p>
-          </motion.div>
+          </div>
         </div>
       </div>
     </>
