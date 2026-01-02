@@ -135,6 +135,8 @@ export interface WellnessInsights {
   floorsFromActivities: number; // From tracked activities
   weeklyFloors?: { [key: string]: number }; // Actual floor data per weekday
   hasRealFloorData?: boolean;
+  bestFloorDay?: { date: string | null; floors: number; activityName: string };
+  monthlyFloors?: number[]; // Floors per month (0-11)
 
   // Hydration
   avgDailySweatLossMl: number | null;
