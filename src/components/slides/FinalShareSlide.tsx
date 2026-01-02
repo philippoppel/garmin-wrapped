@@ -7,8 +7,9 @@ import {
   Flame, Mountain, Plane, Calendar, Heart, Droplets,
   Pizza, Tv, Zap, Share2, Video, Image, Loader2, Settings2,
   Timer, Trophy, TrendingUp, Moon, Sunrise, Clock, Route,
-  Target, Award, Dumbbell, Waves, Check
+  Target, Award, Dumbbell, Waves, Check, Home
 } from "lucide-react";
+import Link from "next/link";
 import SlideWrapper from "./SlideWrapper";
 import { YearStats } from "@/lib/types/activity";
 import html2canvas from "html2canvas";
@@ -807,8 +808,8 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
       if (prev.includes(statId)) {
         return prev.filter(id => id !== statId);
       }
-      if (prev.length >= 6) {
-        return prev; // Max 6 stats
+      if (prev.length >= 5) {
+        return prev; // Max 5 stats
       }
       return [...prev, statId];
     });
@@ -924,7 +925,7 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
             <div className="flex items-center justify-between mb-2 lg:mb-3">
               <p className="text-white/50 text-xs lg:text-sm">Wähle deine Stats:</p>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] lg:text-xs text-white/30">{selectedCustomStats.length}/6</span>
+                <span className="text-[10px] lg:text-xs text-white/30">{selectedCustomStats.length}/5</span>
                 <button
                   onClick={randomizeStats}
                   className="flex items-center gap-1 lg:gap-1.5 px-2 lg:px-3 py-1 lg:py-1.5 rounded-lg text-[10px] lg:text-xs bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 text-purple-300 hover:from-purple-500/30 hover:to-pink-500/30 transition-all"
@@ -963,7 +964,7 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
                           <button
                             key={stat.id}
                             onClick={() => toggleStat(stat.id)}
-                            disabled={!isSelected && selectedCustomStats.length >= 6}
+                            disabled={!isSelected && selectedCustomStats.length >= 5}
                             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all ${
                               isSelected
                                 ? "bg-cyan-500/20 border border-cyan-500/50 text-cyan-300"
@@ -1022,6 +1023,15 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
                 : "1080 × 1920px • Perfekt für Instagram Stories"
               }
             </p>
+
+            {/* Home Link */}
+            <Link
+              href="/"
+              className="mt-4 w-full py-3 rounded-xl bg-white/5 border border-white/10 text-white/60 font-medium text-sm flex items-center justify-center gap-2 hover:bg-white/10 hover:text-white/80 transition"
+            >
+              <Home className="w-4 h-4" />
+              Zur Startseite
+            </Link>
           </motion.div>
         </div>
 
@@ -1092,6 +1102,15 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
               }
             </span>
           </button>
+
+          {/* Home Link - Mobile */}
+          <Link
+            href="/"
+            className="mt-2 w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/50 font-medium text-sm flex items-center justify-center gap-2 hover:bg-white/10 hover:text-white/70 transition"
+          >
+            <Home className="w-4 h-4" />
+            Startseite
+          </Link>
         </motion.div>
       </div>
     </SlideWrapper>
