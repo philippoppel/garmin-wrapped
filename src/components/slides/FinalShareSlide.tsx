@@ -749,6 +749,7 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
     return available.slice(0, 5);
   });
   const cardRef = useRef<HTMLDivElement>(null);
+  const mobileCardRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null!);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -850,7 +851,9 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
 
   // PNG Export for image
   const handleDownload = useCallback(async () => {
-    if (!cardRef.current) return;
+    // Use mobile ref if visible, otherwise desktop ref
+    const activeCardRef = window.innerWidth < 1024 ? mobileCardRef.current : cardRef.current;
+    if (!activeCardRef) return;
 
     // If video, use GIF export
     if (mediaType === "video" && profileVideo) {
@@ -859,7 +862,7 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
 
     setIsGenerating(true);
     try {
-      const canvas = await html2canvas(cardRef.current, {
+      const canvas = await html2canvas(activeCardRef, {
         scale: 3,
         backgroundColor: null,
         useCORS: true,
@@ -906,32 +909,48 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
     <div className="slide-container-scroll bg-gradient-to-br from-[#0f0515] via-[#150a20] to-[#0a0510]">
       <PartyBackground />
 
-      <div className="relative z-10 w-full flex flex-col lg:flex-row items-center justify-start lg:justify-center gap-4 lg:gap-12 px-4">
-        {/* Left Side - Controls (on desktop) / Top (on mobile) */}
+      <div className="relative z-10 w-full flex flex-col lg:flex-row items-center justify-start lg:justify-center gap-3 lg:gap-12 px-4">
+
+        {/* Mobile: Card Preview FIRST */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="lg:hidden relative flex-shrink-0 mb-2"
+        >
+          <div
+            ref={mobileCardRef}
+            className="relative overflow-hidden rounded-xl shadow-2xl"
+            style={{ width: '160px', height: '284px' }}
+          >
+            {renderCard()}
+          </div>
+        </motion.div>
+
+        {/* Left Side - Controls */}
         <div className="w-full lg:w-auto lg:max-w-md flex flex-col items-center lg:items-start flex-shrink-0">
-          {/* Header - Compact on mobile */}
+          {/* Header - Hidden on mobile, shown on desktop */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center lg:text-left mb-3 lg:mb-6"
+            className="hidden lg:block text-left mb-6"
           >
             <motion.div
-              className="mb-2 lg:mb-4 inline-flex items-center justify-center w-12 h-12 lg:w-20 lg:h-20 rounded-xl lg:rounded-2xl bg-gradient-to-br from-orange-500 to-red-500"
+              className="mb-4 inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500"
               animate={{ scale: [1, 1.05, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
-              <Share2 className="w-6 h-6 lg:w-10 lg:h-10 text-white" />
+              <Share2 className="w-10 h-10 text-white" />
             </motion.div>
-            <h1 className="text-2xl lg:text-5xl font-black text-white mb-1 lg:mb-2">Teile dein Jahr!</h1>
-            <p className="text-white/40 text-sm lg:text-lg">Wähle deinen Style und lade dein Bild</p>
+            <h1 className="text-5xl font-black text-white mb-2">Teile dein Jahr!</h1>
+            <p className="text-white/40 text-lg">Wähle deinen Style und lade dein Bild</p>
           </motion.div>
 
-          {/* Photo Upload - Compact on mobile */}
+          {/* Photo Upload */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="w-full mb-3 lg:mb-6"
+            className="w-full mb-2 lg:mb-6"
           >
             {!profileImage && !profileVideo ? (
               <button
@@ -1009,7 +1028,7 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
               </div>
             </div>
 
-            <div className="bg-white/5 rounded-xl lg:rounded-2xl border border-white/10 p-2 lg:p-3 max-h-[100px] sm:max-h-[120px] lg:max-h-[280px] overflow-y-auto">
+            <div className="bg-white/5 rounded-xl lg:rounded-2xl border border-white/10 p-2 lg:p-3 max-h-[160px] sm:max-h-[180px] lg:max-h-[280px] overflow-y-auto">
               {/* Categories */}
               {(["distance", "time", "health", "fun", "records"] as const).map(category => {
                 const categoryStats = CUSTOM_STATS.filter(s => s.category === category && s.available(stats));
@@ -1108,16 +1127,16 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
           </motion.div>
         </div>
 
-        {/* Right Side - Card Preview */}
+        {/* Right Side - Card Preview (Desktop only) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
-          className="relative flex-shrink-0"
+          className="hidden lg:block relative flex-shrink-0"
         >
           {/* Glow effect */}
           <motion.div
-            className="absolute -inset-2 lg:-inset-8 rounded-2xl lg:rounded-3xl blur-xl lg:blur-3xl opacity-40"
+            className="absolute -inset-8 rounded-3xl blur-3xl opacity-40"
             style={{
               background: "linear-gradient(135deg, #8B5CF6, #06B6D4)"
             }}
@@ -1125,19 +1144,19 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
             transition={{ duration: 2, repeat: Infinity }}
           />
 
-          {/* Card Container - Smaller on mobile, larger on desktop */}
+          {/* Card Container */}
           <div
             ref={cardRef}
-            className="relative overflow-hidden rounded-xl lg:rounded-3xl shadow-2xl card-preview-size"
+            className="relative overflow-hidden rounded-3xl shadow-2xl card-preview-size"
           >
             {renderCard()}
           </div>
 
-          {/* Card label - Hidden on mobile */}
+          {/* Card label */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="hidden lg:block absolute -bottom-6 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/10"
+            className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/10"
           >
             <span className="text-white/50 text-xs">Live-Vorschau</span>
           </motion.div>
