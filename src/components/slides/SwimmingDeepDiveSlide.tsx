@@ -116,164 +116,66 @@ function WaterBackground() {
   );
 }
 
-// Animated swimmer with proper swimming motion
+// Animated swimmer - clean SVG
 function AnimatedSwimmer() {
   return (
-    <div className="relative w-full h-24">
-      {/* Water splash behind swimmer */}
-      <motion.div
-        className="absolute left-1/2 top-1/2 -translate-x-[100px] -translate-y-1/2"
-        animate={{ opacity: [0.3, 0.6, 0.3] }}
-        transition={{ duration: 1.5, repeat: Infinity }}
-      >
-        {[0, 1, 2, 3].map((i) => (
-          <motion.div
-            key={i}
-            className="absolute w-2 h-2 rounded-full bg-cyan-400/40"
-            style={{
-              left: -20 - i * 15,
-              top: -5 + (i % 2) * 10,
-            }}
-            animate={{
-              x: [-10, -40],
-              y: [0, (i % 2 === 0 ? -15 : 15)],
-              opacity: [0.6, 0],
-              scale: [1, 0.5],
-            }}
-            transition={{
-              duration: 0.8,
-              repeat: Infinity,
-              delay: i * 0.2,
-            }}
-          />
-        ))}
-      </motion.div>
-
-      <svg
-        viewBox="0 0 200 80"
-        className="w-full h-full"
-        style={{ filter: "drop-shadow(0 4px 20px rgba(59,130,246,0.4))" }}
-      >
+    <div className="relative w-full h-20 flex items-center justify-center">
+      <svg viewBox="0 0 100 30" className="w-56 h-14">
         <defs>
-          <linearGradient id="swimmerBody" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#3b82f6" />
-            <stop offset="50%" stopColor="#06b6d4" />
-            <stop offset="100%" stopColor="#0ea5e9" />
-          </linearGradient>
-          <linearGradient id="swimCap" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#f97316" />
-            <stop offset="100%" stopColor="#ea580c" />
+          <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#0ea5e9" />
+            <stop offset="100%" stopColor="#3b82f6" />
           </linearGradient>
         </defs>
 
-        {/* Body - horizontal swimming position */}
-        <motion.ellipse
-          cx="100"
-          cy="40"
-          rx="35"
-          ry="10"
-          fill="url(#swimmerBody)"
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
+        {/* Legs (behind body) */}
+        <motion.line
+          x1="25" y1="15" x2="8" y2="12"
+          stroke="#0ea5e9" strokeWidth="3" strokeLinecap="round"
+          animate={{ y2: [12, 18, 12] }}
+          transition={{ duration: 0.3, repeat: Infinity }}
+        />
+        <motion.line
+          x1="25" y1="15" x2="8" y2="18"
+          stroke="#0ea5e9" strokeWidth="3" strokeLinecap="round"
+          animate={{ y2: [18, 12, 18] }}
+          transition={{ duration: 0.3, repeat: Infinity }}
         />
 
-        {/* Head with swim cap */}
-        <motion.circle
-          cx="140"
-          cy="38"
-          r="10"
-          fill="url(#swimCap)"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.1 }}
-        />
+        {/* Body */}
+        <ellipse cx="45" cy="15" rx="22" ry="6" fill="url(#bodyGrad)" />
 
-        {/* Goggles */}
-        <motion.ellipse
-          cx="147"
-          cy="37"
-          rx="4"
-          ry="2.5"
-          fill="#1e293b"
-          stroke="#64748b"
-          strokeWidth="0.5"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        />
+        {/* Head */}
+        <circle cx="70" cy="14" r="5" fill="#f97316" />
 
-        {/* Front arm - freestyle stroke */}
+        {/* Front arm (reaching forward) */}
         <motion.path
-          d="M130 35 Q160 20 175 35"
-          stroke="url(#swimmerBody)"
-          strokeWidth="6"
-          strokeLinecap="round"
-          fill="none"
-          animate={{
-            d: [
-              "M130 35 Q160 20 175 35",
-              "M130 35 Q160 50 175 40",
-              "M130 35 Q160 20 175 35",
-            ],
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          d="M68 12 Q80 6 90 12"
+          stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" fill="none"
+          animate={{ d: ["M68 12 Q80 6 90 12", "M68 12 Q80 20 90 16", "M68 12 Q80 6 90 12"] }}
+          transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Back arm - recovery */}
+        {/* Back arm (recovery, above body) */}
         <motion.path
-          d="M75 40 Q50 25 30 40"
-          stroke="url(#swimmerBody)"
-          strokeWidth="5"
-          strokeLinecap="round"
-          fill="none"
-          animate={{
-            d: [
-              "M75 40 Q50 25 30 40",
-              "M75 40 Q50 55 30 45",
-              "M75 40 Q50 25 30 40",
-            ],
-          }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 0.75,
-          }}
+          d="M68 12 Q55 2 45 8"
+          stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" fill="none"
+          animate={{ d: ["M68 12 Q55 2 45 8", "M68 12 Q55 22 45 18", "M68 12 Q55 2 45 8"] }}
+          transition={{ duration: 1, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
         />
-
-        {/* Legs - flutter kick */}
-        <motion.g
-          animate={{
-            rotate: [0, 5, 0, -5, 0],
-          }}
-          transition={{
-            duration: 0.4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          style={{ transformOrigin: "70px 42px" }}
-        >
-          <motion.path
-            d="M65 38 L40 32 L25 35"
-            stroke="url(#swimmerBody)"
-            strokeWidth="5"
-            strokeLinecap="round"
-            fill="none"
-          />
-          <motion.path
-            d="M65 45 L40 50 L25 48"
-            stroke="url(#swimmerBody)"
-            strokeWidth="5"
-            strokeLinecap="round"
-            fill="none"
-          />
-        </motion.g>
       </svg>
+
+      {/* Water bubbles */}
+      <div className="absolute left-1/2 -translate-x-32 flex gap-2">
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            className="w-1.5 h-1.5 rounded-full bg-cyan-400/50"
+            animate={{ opacity: [0.5, 0], x: [-5, -20] }}
+            transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -521,6 +423,33 @@ export default function SwimmingDeepDiveSlide({ stats }: SwimmingDeepDiveSlidePr
             </div>
             <div className="text-xs text-white/50">der Donau</div>
             <div className="text-[10px] text-white/30">2.857 km Fluss</div>
+          </div>
+        </motion.div>
+
+        {/* Fun Animal Facts */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+          className="flex flex-wrap justify-center gap-2 mb-4"
+        >
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+            <span className="text-base">🐬</span>
+            <span className="text-white/60 text-xs">
+              Ein Delphin (32 km/h) hätte deine Distanz in <span className="text-blue-400 font-bold">{Math.round(totalKm / 32 * 60)} Minuten</span> geschafft
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+            <span className="text-base">🦭</span>
+            <span className="text-white/60 text-xs">
+              Robben schwimmen ~100km/Tag – du hast <span className="text-cyan-400 font-bold">{(totalKm / 100).toFixed(1)}</span> Robben-Tage geschwommen
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20">
+            <span className="text-base">🐢</span>
+            <span className="text-white/60 text-xs">
+              Meeresschildkröten schwimmen ~35km/Tag – das sind <span className="text-teal-400 font-bold">{(totalKm / 35).toFixed(1)}</span> Schildkröten-Tage
+            </span>
           </div>
         </motion.div>
 

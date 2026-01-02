@@ -249,6 +249,7 @@ async function fetchWellnessData(client: any, year: number) {
           client.getSleepData(sampleDate).catch(() => null),
         ]);
         const dateStr = sampleDate.toISOString().split("T")[0];
+
         const hydrationData = await client.get(
           `https://connect.garmin.com/modern/proxy/usersummary-service/usersummary/hydration/allData/${dateStr}`,
           {}
@@ -354,7 +355,7 @@ async function fetchWellnessData(client: any, year: number) {
     console.log("Stress data fetch failed");
   }
 
-  // Calculate weekly averages
+  // Calculate weekly averages for steps
   for (const day of weekDays) {
     const dayKey = day as keyof typeof wellnessData.weeklySteps;
     const count = (wellnessData.weeklySteps.counts as any)[dayKey];
@@ -569,6 +570,7 @@ function processActivities(activities: any[], year: number, healthData: any[] = 
 
   // Track detailed breakdown of "other" activities
   const otherBreakdown: Record<string, { count: number; totalDistance: number; totalDuration: number; displayName: string }> = {};
+  const cyclingBreakdown: Record<string, { count: number; totalDistance: number; totalDuration: number; displayName: string }> = {};
 
   // Display names for specific "other" activity types
   const otherDisplayNames: Record<string, string> = {
@@ -689,6 +691,37 @@ function processActivities(activities: any[], year: number, healthData: any[] = 
       otherBreakdown[activityType].count++;
       otherBreakdown[activityType].totalDistance += distance;
       otherBreakdown[activityType].totalDuration += duration;
+    }
+
+    // Track detailed breakdown for cycling subtypes
+    if (mappedType === "cycling") {
+      const cyclingDisplayNames: Record<string, string> = {
+        road_biking: "Rennrad",
+        cycling: "Radfahren",
+        mountain_biking: "Mountainbike",
+        gravel_cycling: "Gravel",
+        indoor_cycling: "Indoor",
+        virtual_ride: "Virtuell",
+        e_bike: "E-Bike",
+        e_bike_cycling: "E-Bike",
+        spinning: "Spinning",
+        commuting: "Pendeln",
+        bmx: "BMX",
+        cyclocross: "Cyclocross",
+      };
+      const displayName = cyclingDisplayNames[activityType] || activityType;
+      const key = displayName.toLowerCase().replace(/\s+/g, "_");
+      if (!cyclingBreakdown[key]) {
+        cyclingBreakdown[key] = {
+          count: 0,
+          totalDistance: 0,
+          totalDuration: 0,
+          displayName,
+        };
+      }
+      cyclingBreakdown[key].count++;
+      cyclingBreakdown[key].totalDistance += distance;
+      cyclingBreakdown[key].totalDuration += duration;
     }
 
     // Track longest activity
@@ -877,6 +910,7 @@ function processActivities(activities: any[], year: number, healthData: any[] = 
     achievements,
     unknownActivityTypes: Array.from(unknownTypes), // For debugging
     otherBreakdown, // Detailed breakdown of "other" activities
+    cyclingBreakdown: Object.keys(cyclingBreakdown).length > 0 ? cyclingBreakdown : undefined, // Breakdown of cycling subtypes
     userWeight, // User weight from Garmin profile in kg
   };
 }
@@ -1328,15 +1362,34 @@ function processWellnessInsights(wellnessData: any, activities: any[]) {
   // Find months sorted by steps
   const monthNames = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
-  // Extract floors climbed from activities
-  const floorsFromActivities = activities.reduce((sum: number, a: any) => {
-    const floors = a.floorsClimbed || 0;
-    return sum + (typeof floors === 'number' ? floors : 0);
+  // Calculate floors from elevation gain (1 floor ≈ 3 meters)
+  const totalElevation = activities.reduce((sum: number, a: any) => {
+    return sum + (a.elevationGain || 0);
   }, 0);
+  const totalFloorsClimbed = Math.round(totalElevation / 3);
 
-  // Estimate total floors (if avg is ~10 floors/day for active person)
-  const avgDailyFloors = avgDailySteps > 0 ? Math.round(avgDailySteps / 1000) : 0;
-  const totalFloorsClimbed = Math.round(avgDailyFloors * 365) + floorsFromActivities;
+  // Calculate weekday elevation/floors pattern from activities
+  const weekdayElevation: { [key: string]: number } = { sun: 0, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 };
+  const weekdayCounts: { [key: string]: number } = { sun: 0, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 };
+  const dayNames = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+
+  for (const activity of activities) {
+    const dayOfWeek = new Date(activity.startTimeLocal).getDay();
+    const dayKey = dayNames[dayOfWeek];
+    weekdayElevation[dayKey] += activity.elevationGain || 0;
+    weekdayCounts[dayKey]++;
+  }
+
+  // Calculate average floors per weekday
+  const weeklyFloors: { [key: string]: number } = {};
+  for (const day of dayNames) {
+    const avgElevation = weekdayCounts[day] > 0 ? weekdayElevation[day] / weekdayCounts[day] : 0;
+    weeklyFloors[day] = Math.round(avgElevation / 3); // Convert to floors
+  }
+
+  // Calculate average per day (over 365 days, not per activity)
+  const avgDailyFloors = Math.round(totalFloorsClimbed / 365);
+  const hasRealFloorData = totalElevation > 0;
 
   // Sweat loss - try hydration data first, then fall back to activity waterEstimated
   const sweatLossSamples = wellnessData.sweatLossSamples || [];
@@ -1404,10 +1457,12 @@ function processWellnessInsights(wellnessData: any, activities: any[]) {
     monthlySteps: wellnessData.monthlySteps,
     bestMonth: { name: monthNames[bestMonth.month], steps: bestMonth.steps },
 
-    // Floors
+    // Floors (calculated from elevation gain: 1 floor ≈ 3m)
     totalFloorsClimbed,
     avgDailyFloors,
-    floorsFromActivities,
+    floorsFromActivities: 0, // Not used anymore, kept for compatibility
+    weeklyFloors,
+    hasRealFloorData,
 
     // Hydration / Sweat Loss
     avgDailySweatLossMl,

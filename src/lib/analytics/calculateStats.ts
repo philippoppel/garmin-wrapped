@@ -378,6 +378,51 @@ export function calculateYearStats(activities: Activity[], year: number): YearSt
   const monthlyStats = calculateMonthlyStats(activities);
   const weekdayStats = calculateWeekdayStats(activities);
 
+  // Calculate cycling breakdown by subtype
+  const cyclingBreakdown: Record<string, { count: number; totalDistance: number; totalDuration: number; displayName: string }> = {};
+  const cyclingActivities = activities.filter(a => a.type === "cycling");
+
+  const cyclingDisplayNames: Record<string, string> = {
+    "road cycling": "Rennrad",
+    "rennrad": "Rennrad",
+    "cycling": "Radfahren",
+    "radfahren": "Radfahren",
+    "mountain biking": "Mountainbike",
+    "mountainbiken": "Mountainbike",
+    "gravel cycling": "Gravel",
+    "gravel-radfahren": "Gravel",
+    "indoor cycling": "Indoor",
+    "indoor-rad": "Indoor",
+    "virtual ride": "Virtuell",
+    "virtuelles radfahren": "Virtuell",
+    "e-bike": "E-Bike",
+    "e-bike cycling": "E-Bike",
+    "e-bike-fahren": "E-Bike",
+    "spinning": "Spinning",
+    "commuting": "Pendeln",
+    "pendeln": "Pendeln",
+    "road_biking": "Rennrad",
+    "indoor_cycling": "Indoor",
+  };
+
+  for (const activity of cyclingActivities) {
+    const originalType = (activity.originalType || "cycling").toLowerCase();
+    const displayName = cyclingDisplayNames[originalType] || activity.originalType || "Radfahren";
+    const key = displayName.toLowerCase().replace(/\s+/g, "_");
+
+    if (!cyclingBreakdown[key]) {
+      cyclingBreakdown[key] = {
+        count: 0,
+        totalDistance: 0,
+        totalDuration: 0,
+        displayName,
+      };
+    }
+    cyclingBreakdown[key].count++;
+    cyclingBreakdown[key].totalDistance += activity.distance / 1000;
+    cyclingBreakdown[key].totalDuration += activity.duration / 3600;
+  }
+
   const baseStats = {
     year,
     totalActivities: activities.length,
@@ -389,6 +434,7 @@ export function calculateYearStats(activities: Activity[], year: number): YearSt
     records,
     monthlyStats,
     weekdayStats,
+    cyclingBreakdown: Object.keys(cyclingBreakdown).length > 0 ? cyclingBreakdown : undefined,
   };
 
   const insights = generateInsights(activities, baseStats);

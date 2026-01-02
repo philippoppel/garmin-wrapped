@@ -67,48 +67,6 @@ function PowerGauge({ ftp, maxScale = 400 }: { ftp: number; maxScale?: number })
           filter="url(#powerGlow)"
         />
 
-        {/* Tick marks */}
-        {[0, 100, 200, 300, 400].map((val) => {
-          const angle = -135 + (val / maxScale) * 270;
-          const rad = (angle * Math.PI) / 180;
-          const innerR = 65;
-          const outerR = 75;
-          const labelR = 52;
-          const x1 = 100 + innerR * Math.cos(rad);
-          const y1 = 100 + innerR * Math.sin(rad);
-          const x2 = 100 + outerR * Math.cos(rad);
-          const y2 = 100 + outerR * Math.sin(rad);
-          const labelX = 100 + labelR * Math.cos(rad);
-          const labelY = 100 + labelR * Math.sin(rad);
-
-          // Adjust text anchor based on position
-          const textAnchor = angle < -45 ? "end" : angle > 45 ? "start" : "middle";
-
-          return (
-            <g key={val}>
-              <line
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="rgba(255,255,255,0.3)"
-                strokeWidth="2"
-              />
-              <text
-                x={labelX}
-                y={labelY}
-                fill="rgba(255,255,255,0.5)"
-                fontSize="11"
-                fontWeight="500"
-                textAnchor={textAnchor}
-                dominantBaseline="middle"
-              >
-                {val}
-              </text>
-            </g>
-          );
-        })}
-
         {/* Needle */}
         <motion.g
           initial={{ rotate: -135 }}
@@ -146,18 +104,20 @@ function PowerGauge({ ftp, maxScale = 400 }: { ftp: number; maxScale?: number })
       </svg>
 
       {/* FTP Value overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <div className="absolute inset-0 flex flex-col items-center justify-center pt-20">
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 1.5, type: "spring" }}
-          className="text-center mt-4"
+          className="text-center"
         >
-          <div className="text-4xl font-black text-white leading-none">
-            <CountingNumber value={Math.round(ftp)} delay={0.5} duration={2} />
-            <span className="text-xl text-white/60 ml-0.5">W</span>
+          <div className="flex items-baseline justify-center">
+            <span className="text-4xl font-black text-white leading-none">
+              <CountingNumber value={Math.round(ftp)} delay={0.5} duration={2} />
+            </span>
+            <span className="text-lg text-white/60 ml-0.5">W</span>
           </div>
-          <div className="text-xs text-white/40 mt-1">FTP</div>
+          <div className="text-xs text-white/40 mt-0.5">FTP</div>
         </motion.div>
       </div>
     </div>
@@ -581,12 +541,39 @@ export default function CyclingPowerSlide({ stats }: CyclingPowerSlideProps) {
           </motion.div>
         )}
 
+        {/* Fun Power Facts */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 3.0 }}
+          className="flex flex-wrap justify-center gap-2 mt-4"
+        >
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20">
+            <span className="text-base">💡</span>
+            <span className="text-white/60 text-xs">
+              Dein FTP könnte <span className="text-yellow-400 font-bold">{ftp ? Math.round(ftp / 10) : 0} LED-Lampen</span> (10W) betreiben
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
+            <span className="text-base">🍞</span>
+            <span className="text-white/60 text-xs">
+              Für einen Toaster (1000W) bräuchtest du <span className="text-orange-400 font-bold">{ftp ? Math.round(1000 / ftp) : 0} Radfahrer</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+            <span className="text-base">🚴</span>
+            <span className="text-white/60 text-xs">
+              Tour-de-France-Profis: <span className="text-cyan-400 font-bold">~400W</span> FTP
+            </span>
+          </div>
+        </motion.div>
+
         {/* Data Source Attribution */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 3.2 }}
-          className="mt-4 space-y-1"
+          className="mt-3 space-y-1"
         >
           <div className="flex items-center justify-center gap-2 text-[10px] text-white/30">
             <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2">

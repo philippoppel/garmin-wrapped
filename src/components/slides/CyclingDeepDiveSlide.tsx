@@ -677,6 +677,51 @@ export default function CyclingDeepDiveSlide({ stats }: CyclingDeepDiveSlideProp
           </div>
         </motion.div>
 
+        {/* Cycling Type Breakdown */}
+        {stats.cyclingBreakdown && Object.keys(stats.cyclingBreakdown).length > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0 }}
+            className="mb-4"
+          >
+            <div className="text-white/50 text-xs mb-2">Aufschlüsselung nach Radtyp</div>
+            <div className="flex flex-wrap justify-center gap-2">
+              {Object.entries(stats.cyclingBreakdown)
+                .sort((a, b) => b[1].totalDistance - a[1].totalDistance)
+                .map(([key, data]) => {
+                  const percentage = Math.round((data.totalDistance / totalKm) * 100);
+                  const icons: Record<string, string> = {
+                    rennrad: "🚴",
+                    radfahren: "🚲",
+                    mountainbike: "🚵",
+                    gravel: "🛤️",
+                    indoor: "🏠",
+                    virtuell: "🎮",
+                    "e-bike": "⚡",
+                    spinning: "💫",
+                    pendeln: "🏙️",
+                  };
+                  const icon = icons[key] || "🚲";
+                  return (
+                    <div
+                      key={key}
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10"
+                    >
+                      <span className="text-lg">{icon}</span>
+                      <div className="text-left">
+                        <div className="text-sm font-medium text-white">{data.displayName}</div>
+                        <div className="text-[10px] text-white/50">
+                          {Math.round(data.totalDistance)} km · {percentage}%
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </motion.div>
+        )}
+
         {/* Records & Highlights */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -746,11 +791,19 @@ export default function CyclingDeepDiveSlide({ stats }: CyclingDeepDiveSlideProp
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
             <span className="text-base">🌳</span>
             <span className="text-emerald-400 font-bold text-sm">{co2Saved.kg >= 100 ? Math.round(co2Saved.kg / 22) : Math.round(co2Saved.kg)}</span>
-            <span className="text-white/40 text-xs">{co2Saved.kg >= 100 ? "Bäume/Jahr" : "kg CO₂ gespart"}</span>
+            <span className="text-white/40 text-xs">{co2Saved.kg >= 100 ? "Bäume/Jahr Äquivalent" : "kg CO₂ gespart"}</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-            <span className="text-base">⏱️</span>
-            <span className="text-white/60 text-xs">{(totalHours / 24).toFixed(1)} Tage non-stop</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20">
+            <span className="text-base">🐆</span>
+            <span className="text-white/60 text-xs">
+              Ein Gepard (110 km/h) hätte deine Distanz in <span className="text-cyan-400 font-bold">{(totalKm / 110).toFixed(1)}h</span> geschafft
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20">
+            <span className="text-base">🐢</span>
+            <span className="text-white/60 text-xs">
+              Eine Schildkröte (0.3 km/h) bräuchte <span className="text-teal-400 font-bold">{Math.round(totalKm / 0.3 / 24 / 365 * 10) / 10} Jahre</span>
+            </span>
           </div>
         </motion.div>
 

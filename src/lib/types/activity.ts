@@ -12,6 +12,7 @@ export type ActivityType =
 export interface Activity {
   id: string;
   type: ActivityType;
+  originalType?: string; // Original Garmin activity type before mapping
   name: string;
   date: Date;
 
@@ -102,6 +103,14 @@ export interface YearStats {
     displayName: string;
   }>;
 
+  // Detailed breakdown of cycling subtypes
+  cyclingBreakdown?: Record<string, {
+    count: number;
+    totalDistance: number;
+    totalDuration: number;
+    displayName: string;
+  }>;
+
   // User weight from Garmin profile (kg)
   userWeight?: number | null;
 }
@@ -124,6 +133,8 @@ export interface WellnessInsights {
   totalFloorsClimbed: number;
   avgDailyFloors: number;
   floorsFromActivities: number; // From tracked activities
+  weeklyFloors?: { [key: string]: number }; // Actual floor data per weekday
+  hasRealFloorData?: boolean;
 
   // Hydration
   avgDailySweatLossMl: number | null;

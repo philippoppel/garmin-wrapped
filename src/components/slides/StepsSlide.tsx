@@ -295,17 +295,18 @@ function MonthlyChart({ monthlySteps, bestMonth }: { monthlySteps: number[]; bes
   );
 }
 
-// Floors climbed visualization with building comparison
-function FloorsVisualization({ totalFloors, avgDaily }: { totalFloors: number; avgDaily: number }) {
-  // Famous building comparisons
-  const buildings = [
-    { name: "Burj Khalifa", floors: 163, emoji: "🏗️" },
-    { name: "Empire State", floors: 102, emoji: "🗽" },
-    { name: "Eiffelturm", floors: 108, emoji: "🗼" }, // Equivalent floors
-  ];
-
+// Floors climbed visualization with weekday distribution
+function FloorsVisualization({ totalFloors, avgDaily, weeklyFloors }: { totalFloors: number; avgDaily: number; weeklyFloors?: { [key: string]: number } }) {
   const burjKhalifaClimbs = totalFloors / 163;
   const empireStateClimbs = totalFloors / 102;
+
+  // Use actual floor data from Garmin
+  const weekdays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+  const dayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+  const floorsByDay = dayKeys.map((key) => weeklyFloors?.[key] || 0);
+  const hasData = floorsByDay.some(f => f > 0);
+  const maxFloors = Math.max(...floorsByDay, 1);
 
   return (
     <motion.div
@@ -314,7 +315,7 @@ function FloorsVisualization({ totalFloors, avgDaily }: { totalFloors: number; a
       transition={{ delay: 1.2 }}
       className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl p-4 transition-all duration-300 hover:border-amber-400/60 hover:shadow-[0_12px_30px_rgba(120,53,15,0.25)] hover:-translate-y-0.5"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-3">
         <div>
           <div className="text-xs text-white/50 mb-1">Stockwerke erklommen</div>
           <div className="text-3xl font-bold text-amber-400">
@@ -324,52 +325,43 @@ function FloorsVisualization({ totalFloors, avgDaily }: { totalFloors: number; a
         </div>
 
         <div className="flex flex-col items-end gap-1">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 1.4, type: "spring" }}
-            className="flex items-center gap-2 text-xs"
-          >
+          <div className="flex items-center gap-2 text-xs">
             <span className="text-white/60">= {burjKhalifaClimbs.toFixed(1)}x</span>
             <span>🏗️</span>
             <span className="text-amber-300">Burj Khalifa</span>
-          </motion.div>
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 1.5, type: "spring" }}
-            className="flex items-center gap-2 text-xs"
-          >
+          </div>
+          <div className="flex items-center gap-2 text-xs">
             <span className="text-white/60">= {empireStateClimbs.toFixed(1)}x</span>
             <span>🗽</span>
             <span className="text-orange-300">Empire State</span>
-          </motion.div>
+          </div>
         </div>
       </div>
 
-      {/* Building visualization */}
-      <div className="flex justify-center gap-4 mt-3">
-        {[...Array(Math.min(Math.floor(burjKhalifaClimbs), 10))].map((_, i) => (
-          <motion.div
-            key={i}
-            initial={{ scaleY: 0, opacity: 0 }}
-            animate={{ scaleY: 1, opacity: 1 }}
-            transition={{ delay: 1.6 + i * 0.1 }}
-            className="w-2 h-8 bg-gradient-to-t from-amber-600 to-amber-400 rounded-t"
-            style={{ transformOrigin: "bottom" }}
-          />
-        ))}
-        {burjKhalifaClimbs > 10 && (
-          <motion.span
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2.5 }}
-            className="text-amber-400 text-sm self-end"
-          >
-            +{Math.floor(burjKhalifaClimbs - 10)}
-          </motion.span>
-        )}
-      </div>
+      {/* Weekday distribution */}
+      {hasData && (
+        <div className="mt-2">
+          <div className="text-[10px] text-white/40 mb-2">Ø Stockwerke pro Wochentag</div>
+          <div className="flex items-end justify-between gap-1 h-12">
+            {floorsByDay.map((floors, i) => (
+              <div key={i} className="flex flex-col items-center flex-1">
+                <motion.div
+                  initial={{ scaleY: 0 }}
+                  animate={{ scaleY: 1 }}
+                  transition={{ delay: 1.5 + i * 0.05 }}
+                  className="w-full max-w-[20px] bg-gradient-to-t from-amber-600 to-amber-400 rounded-t"
+                  style={{
+                    height: `${(floors / maxFloors) * 32}px`,
+                    transformOrigin: "bottom",
+                    minHeight: floors > 0 ? "4px" : "0px"
+                  }}
+                />
+                <span className="text-[9px] text-white/50 mt-1">{weekdays[i]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -555,6 +547,7 @@ export default function StepsSlide({ stats }: StepsSlideProps) {
           <FloorsVisualization
             totalFloors={wellness.totalFloorsClimbed}
             avgDaily={wellness.avgDailyFloors}
+            weeklyFloors={wellness.weeklyFloors}
           />
           <DistanceComparison totalSteps={wellness.estimatedYearlySteps} />
         </div>

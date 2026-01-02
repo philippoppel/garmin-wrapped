@@ -434,16 +434,25 @@ export default function RunningDeepDiveSlide({ stats }: RunningDeepDiveSlideProp
           )}
         </motion.div>
 
-        {/* Fun Fact Footer */}
+        {/* Fun Animal Facts */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.6 }}
-          className="mt-3 md:mt-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.4 }}
+          className="flex flex-wrap justify-center gap-2 mt-4"
         >
-          <p className="text-white/40 text-xs md:text-sm">
-            {Math.round(totalHours)} Stunden = {(totalHours / 24).toFixed(1)} Tage non-stop laufen
-          </p>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
+            <span className="text-base">🦌</span>
+            <span className="text-white/60 text-xs">
+              Ein Rothirsch legt täglich 5km zurück – du hast <span className="text-orange-400 font-bold">{Math.round(totalKm / 5)}</span> Hirsch-Tage gelaufen
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+            <span className="text-base">🐕</span>
+            <span className="text-white/60 text-xs">
+              Ein Husky läuft ~80km/Tag – du könntest einen <span className="text-amber-400 font-bold">{(totalKm / 80).toFixed(1)} Tage</span> beschäftigen
+            </span>
+          </div>
         </motion.div>
 
         {/* Data Source Attribution */}

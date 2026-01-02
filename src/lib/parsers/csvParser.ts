@@ -227,6 +227,7 @@ function parseRow(row: GarminCSVRow): Activity | null {
   const activity: Activity = {
     id: generateId(),
     type,
+    originalType: activityType,
     name: row["Title"] || row["Titel"] || activityType,
     date: parseDate(row["Date"] || row["Datum"] || ""),
     distance,
