@@ -7,18 +7,18 @@ import Link from "next/link";
 import { YearStats } from "@/lib/types/activity";
 import Button from "@/components/ui/Button";
 
-// Eagerly load first 2 slides for instant display
+// Eagerly load first 5 slides for instant display
 import IntroSlide from "@/components/slides/IntroSlide";
 import TotalStatsSlide from "@/components/slides/TotalStatsSlide";
+import DistanceSlide from "@/components/slides/DistanceSlide";
+import SportBreakdownSlide from "@/components/slides/SportBreakdownSlide";
+import RunningDeepDiveSlide from "@/components/slides/RunningDeepDiveSlide";
 
-// Lazy load all other slides
-const DistanceSlide = lazy(() => import("@/components/slides/DistanceSlide"));
-const SportBreakdownSlide = lazy(() => import("@/components/slides/SportBreakdownSlide"));
+// Lazy load remaining slides with prefetch hints
 const RecordsSlide = lazy(() => import("@/components/slides/RecordsSlide"));
 const MonthlyChartSlide = lazy(() => import("@/components/slides/MonthlyChartSlide"));
 const HeartRateSlide = lazy(() => import("@/components/slides/HeartRateSlide"));
 const EpicMomentsSlide = lazy(() => import("@/components/slides/EpicMomentsSlide"));
-const RunningDeepDiveSlide = lazy(() => import("@/components/slides/RunningDeepDiveSlide"));
 const CyclingDeepDiveSlide = lazy(() => import("@/components/slides/CyclingDeepDiveSlide"));
 const SwimmingDeepDiveSlide = lazy(() => import("@/components/slides/SwimmingDeepDiveSlide"));
 const CyclingPowerSlide = lazy(() => import("@/components/slides/CyclingPowerSlide"));
@@ -44,7 +44,7 @@ function SlideLoader() {
   );
 }
 
-// Wrapper that detects empty/null slides and shows skip UI
+// Wrapper that detects empty/null slides and auto-skips
 function SlideGuard({
   children,
   onEmpty
@@ -53,46 +53,32 @@ function SlideGuard({
   onEmpty: () => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isEmpty, setIsEmpty] = useState(false);
   const hasChecked = useRef(false);
+  const [showSkip, setShowSkip] = useState(false);
 
   useEffect(() => {
-    // Check after render if the container is empty
     if (hasChecked.current) return;
+    hasChecked.current = true;
 
-    const timer = setTimeout(() => {
+    // Check immediately after first render frame
+    requestAnimationFrame(() => {
       if (containerRef.current) {
-        // Check if the slide rendered anything meaningful
         const hasContent = containerRef.current.children.length > 0 &&
           containerRef.current.innerHTML.trim().length > 50;
 
         if (!hasContent) {
-          setIsEmpty(true);
-          // Auto-skip after showing message
-          setTimeout(onEmpty, 400);
+          setShowSkip(true);
+          // Skip almost immediately
+          setTimeout(onEmpty, 150);
         }
-        hasChecked.current = true;
       }
-    }, 100);
+    });
+  }, [onEmpty]);
 
-    return () => clearTimeout(timer);
-  }, [onEmpty, children]);
-
-  if (isEmpty) {
+  if (showSkip) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-garmin-dark to-[#0f1629]">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <motion.div
-            className="w-8 h-8 border-2 border-white/20 border-t-white/50 rounded-full mx-auto mb-3"
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-          />
-          <p className="text-white/30 text-sm">Weiter...</p>
-        </motion.div>
+        <div className="w-6 h-6 border-2 border-white/30 border-t-white/60 rounded-full animate-spin" />
       </div>
     );
   }
@@ -110,7 +96,17 @@ interface WrappedViewerProps {
 export default function WrappedViewer({ stats, previousYearStats, onExport, onShare }: WrappedViewerProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(0);
-  const [loadedSlides, setLoadedSlides] = useState<Set<number>>(new Set([0, 1]));
+  const slideContainerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to top when slide changes
+  useEffect(() => {
+    // Reset scroll position for new slide
+    if (slideContainerRef.current) {
+      slideContainerRef.current.scrollTop = 0;
+    }
+    // Also reset window scroll just in case
+    window.scrollTo(0, 0);
+  }, [currentSlide]);
 
   // Debug: Log unknown activity types to console
   useEffect(() => {
@@ -226,17 +222,25 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
 
   const totalSlides = slideConfigs.length;
 
-  // Preload next slides when current slide changes
+  // Preload upcoming slides for smoother transitions
   useEffect(() => {
-    const slidesToPreload = [currentSlide, currentSlide + 1, currentSlide + 2].filter(
-      (i) => i >= 0 && i < totalSlides
-    );
-    setLoadedSlides((prev) => {
-      const next = new Set(prev);
-      slidesToPreload.forEach((i) => next.add(i));
-      return next;
-    });
-  }, [currentSlide, totalSlides]);
+    // Dynamically import next few slides in background
+    const preloadSlide = (index: number) => {
+      if (index >= 0 && index < totalSlides) {
+        const key = slideConfigs[index]?.key;
+        // Trigger render function to initiate lazy load
+        if (key && !['intro', 'total', 'distance', 'sports', 'running-deep'].includes(key)) {
+          // The lazy() import will start loading when we access the component
+          slideConfigs[index].render();
+        }
+      }
+    };
+
+    // Preload next 3 slides
+    preloadSlide(currentSlide + 1);
+    preloadSlide(currentSlide + 2);
+    preloadSlide(currentSlide + 3);
+  }, [currentSlide, totalSlides, slideConfigs]);
 
   const goToSlide = useCallback(
     (index: number) => {
@@ -380,7 +384,7 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
       style={{ touchAction: 'pan-y' }} // Allow vertical scroll, handle horizontal ourselves
     >
       {/* Slide content */}
-      <div className="relative flex-1 overflow-hidden">
+      <div ref={slideContainerRef} className="relative flex-1 overflow-hidden overflow-y-auto">
         {/* Tap zones for mobile navigation (Instagram Stories style) */}
         <div className="absolute inset-0 z-10 flex md:hidden pointer-events-auto">
           {/* Left tap zone - previous */}
@@ -438,18 +442,22 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.div
             key={currentSlide}
-            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+            initial={{ opacity: 0, x: direction > 0 ? 40 : -40 }}
             animate={{
               opacity: 1,
               x: isSwiping ? swipeOffset : 0,
-              scale: isSwiping ? 0.98 : 1,
+              scale: isSwiping ? 0.985 : 1,
             }}
-            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
-            transition={{
-              duration: isSwiping ? 0 : 0.2,
-              ease: "easeOut"
+            exit={{ opacity: 0, x: direction > 0 ? -40 : 40 }}
+            transition={isSwiping ? {
+              duration: 0,
+            } : {
+              type: "spring",
+              stiffness: 400,
+              damping: 35,
+              mass: 0.8,
             }}
-            className="absolute inset-0"
+            className="absolute inset-0 will-change-transform"
           >
             <Suspense fallback={<SlideLoader />}>
               <SlideGuard key={`guard-${currentSlide}`} onEmpty={nextSlide}>
@@ -471,9 +479,11 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
             {/* Mobile: Elegant progress bar */}
             <div className="md:hidden">
               <div className="h-0.5 bg-white/10 rounded-full overflow-hidden mx-auto max-w-xs">
-                <div
-                  className="h-full bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-500 ease-out"
-                  style={{ width: `${((currentSlide + 1) / totalSlides) * 100}%` }}
+                <motion.div
+                  className="h-full bg-gradient-to-r from-cyan-400 to-purple-500"
+                  initial={false}
+                  animate={{ width: `${((currentSlide + 1) / totalSlides) * 100}%` }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               </div>
             </div>
