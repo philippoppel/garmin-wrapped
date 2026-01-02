@@ -301,16 +301,16 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
     <SlideWrapper gradient="from-[#050a15] via-[#0a1628] to-[#050a15]">
       <AnimatedBackground />
 
-      <div className="relative z-10 text-center w-full max-w-2xl mx-auto px-4">
+      <div className="relative z-10 text-center w-full max-w-2xl mx-auto px-3 md:px-4">
         {/* Header - Bigger and bolder */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, type: "spring" }}
-          className="mb-8"
+          className="mb-4 md:mb-8"
         >
           <motion.h1
-            className="text-4xl md:text-5xl font-black text-white mb-3"
+            className="text-3xl md:text-5xl font-black text-white mb-2 md:mb-3"
             animate={{
               textShadow: [
                 "0 0 20px rgba(16,185,129,0)",
@@ -323,25 +323,25 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
             Du vs. die Welt
           </motion.h1>
           <motion.p
-            className="text-white/50 text-base"
+            className="text-white/50 text-sm md:text-base"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
             Verglichen mit <motion.span
-              className="text-emerald-400 font-bold text-lg"
+              className="text-emerald-400 font-bold text-base md:text-lg"
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
-            >135 Millionen</motion.span> Athleten
+            >135 Mio.</motion.span> Athleten
           </motion.p>
         </motion.div>
 
-        {/* Comparison Cards - Larger with more impact */}
+        {/* Comparison Cards - Responsive */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="grid grid-cols-2 gap-4 mb-8"
+          className="grid grid-cols-2 gap-2 md:gap-4 mb-4 md:mb-8"
         >
           {displayComparisons.map((comp, index) => {
             const percent = Math.round((comp.yourNumeric / comp.avgNumeric) * 100);
@@ -357,9 +357,9 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
                   stiffness: 100
                 }}
                 whileHover={{ scale: 1.02, y: -2 }}
-                className={`relative rounded-2xl p-4 text-left overflow-hidden backdrop-blur-sm ${
+                className={`relative rounded-xl md:rounded-2xl p-2.5 md:p-4 text-left overflow-hidden backdrop-blur-sm ${
                   comp.isAboveAvg
-                    ? "bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent border-2 border-emerald-500/30"
+                    ? "bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-transparent border border-emerald-500/30 md:border-2"
                     : "bg-white/5 border border-white/10"
                 }`}
               >
@@ -367,12 +367,12 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
                 {comp.isAboveAvg && (
                   <>
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-transparent rounded-2xl"
+                      className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-transparent rounded-xl md:rounded-2xl"
                       animate={{ opacity: [0.2, 0.5, 0.2] }}
                       transition={{ duration: 2, repeat: Infinity }}
                     />
                     <motion.div
-                      className="absolute -inset-1 bg-emerald-500/20 rounded-2xl blur-xl"
+                      className="absolute -inset-1 bg-emerald-500/20 rounded-xl md:rounded-2xl blur-xl"
                       animate={{ opacity: [0.3, 0.6, 0.3] }}
                       transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
                     />
@@ -380,10 +380,10 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
                 )}
 
                 <div className="relative z-10">
-                  {/* Icon - Much bigger and animated */}
-                  <div className="flex items-start justify-between mb-3">
+                  {/* Icon and TOP badge */}
+                  <div className="flex items-start justify-between mb-1.5 md:mb-3">
                     <motion.span
-                      className="text-4xl"
+                      className="text-2xl md:text-4xl"
                       animate={comp.isAboveAvg ? {
                         scale: [1, 1.3, 1],
                         rotate: [0, 5, -5, 0]
@@ -394,52 +394,46 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
                     </motion.span>
                     {comp.isAboveAvg && (
                       <motion.div
-                        className="flex items-center gap-1 bg-emerald-500/30 text-emerald-300 px-3 py-1 rounded-full"
+                        className="flex items-center gap-0.5 md:gap-1 bg-emerald-500/30 text-emerald-300 px-1.5 md:px-3 py-0.5 md:py-1 rounded-full"
                         initial={{ scale: 0, rotate: -20 }}
                         animate={{ scale: 1, rotate: 0 }}
                         transition={{ delay: 0.7 + index * 0.1, type: "spring", stiffness: 200 }}
                       >
-                        <motion.span
-                          animate={{ rotate: [0, 360] }}
-                          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                        >
-                          ★
-                        </motion.span>
-                        <span className="text-xs font-bold">TOP</span>
+                        <span className="text-[8px] md:text-xs font-bold">TOP</span>
                       </motion.div>
                     )}
                   </div>
 
                   {/* Category name */}
-                  <p className="text-xs text-white/40 uppercase tracking-widest mb-1 font-medium">
+                  <p className="text-[9px] md:text-xs text-white/40 uppercase tracking-wider md:tracking-widest mb-0.5 md:mb-1 font-medium">
                     {comp.title}
                   </p>
 
-                  {/* Main value - HUGE */}
+                  {/* Main value - Responsive sizing */}
                   <motion.div
-                    className="mb-2"
+                    className="mb-1 md:mb-2"
                     initial={{ scale: 0.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.5 + index * 0.1, type: "spring" }}
                   >
-                    <span className={`text-3xl md:text-4xl font-black ${
+                    <span className={`text-lg md:text-4xl font-black break-all leading-tight ${
                       comp.isAboveAvg ? "text-white" : "text-white/70"
                     }`}>
                       {comp.yourValue}
                     </span>
                   </motion.div>
 
-                  {/* VS comparison */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-white/30 text-xs">vs</span>
-                    <span className="text-white/50 text-sm font-medium">{comp.avgValue}</span>
-                    <span className="text-white/30 text-xs">Durchschnitt</span>
+                  {/* VS comparison - Compact on mobile */}
+                  <div className="flex flex-wrap items-center gap-1 md:gap-2 mb-2 md:mb-3">
+                    <span className="text-white/30 text-[10px] md:text-xs">vs</span>
+                    <span className="text-white/50 text-xs md:text-sm font-medium">{comp.avgValue}</span>
+                    <span className="text-white/30 text-[10px] md:text-xs hidden md:inline">Durchschnitt</span>
                   </div>
 
-                  {/* Visual comparison bar - Bigger */}
-                  <div className="relative h-3 bg-white/10 rounded-full overflow-hidden mb-3">
+                  {/* Visual comparison bar */}
+                  <div className="relative h-2 md:h-3 bg-white/10 rounded-full overflow-hidden mb-2 md:mb-3">
                     <div
-                      className="absolute top-0 bottom-0 w-1 bg-white/40 z-10"
+                      className="absolute top-0 bottom-0 w-0.5 md:w-1 bg-white/40 z-10"
                       style={{ left: "50%" }}
                     />
                     <motion.div
@@ -462,10 +456,10 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
                     )}
                   </div>
 
-                  {/* Result - Bold and prominent */}
+                  {/* Result - Responsive */}
                   <div className="flex items-center justify-between">
                     <motion.span
-                      className={`text-lg font-bold ${
+                      className={`text-sm md:text-lg font-bold ${
                         comp.isAboveAvg ? "text-emerald-400" : "text-white/40"
                       }`}
                       initial={{ x: -20, opacity: 0 }}
@@ -474,7 +468,7 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
                     >
                       {comp.comparison}
                     </motion.span>
-                    <span className="text-[10px] text-white/20">{comp.source}</span>
+                    <span className="text-[8px] md:text-[10px] text-white/20">{comp.source}</span>
                   </div>
                 </div>
               </motion.div>
@@ -482,14 +476,14 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
           })}
         </motion.div>
 
-        {/* Summary - Bigger celebration */}
+        {/* Summary - Responsive celebration */}
         <motion.div
           initial={{ opacity: 0, y: 30, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ delay: 1.2, type: "spring" }}
-          className={`relative rounded-3xl p-6 overflow-hidden ${
+          className={`relative rounded-2xl md:rounded-3xl p-4 md:p-6 overflow-hidden ${
             aboveAvgCount >= 3
-              ? "bg-gradient-to-r from-emerald-500/20 via-emerald-400/15 to-emerald-500/20 border-2 border-emerald-500/40"
+              ? "bg-gradient-to-r from-emerald-500/20 via-emerald-400/15 to-emerald-500/20 border border-emerald-500/40 md:border-2"
               : "bg-white/5 border border-white/10"
           }`}
         >
@@ -502,7 +496,7 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
                 transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 2 }}
               />
               <motion.div
-                className="absolute -inset-2 bg-emerald-500/10 rounded-3xl blur-2xl"
+                className="absolute -inset-2 bg-emerald-500/10 rounded-2xl md:rounded-3xl blur-2xl"
                 animate={{ opacity: [0.3, 0.6, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
@@ -513,7 +507,7 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
             {aboveAvgCount >= 3 ? (
               <>
                 <motion.span
-                  className="text-6xl block mb-3"
+                  className="text-4xl md:text-6xl block mb-2 md:mb-3"
                   animate={{
                     rotate: [0, -15, 15, 0],
                     scale: [1, 1.2, 1.2, 1],
@@ -524,7 +518,7 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
                   🏆
                 </motion.span>
                 <motion.p
-                  className="text-white text-xl font-bold mb-1"
+                  className="text-white text-base md:text-xl font-bold mb-1"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 1.4 }}
@@ -532,7 +526,7 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
                   <span className="text-emerald-400">{aboveAvgCount}</span> von {displayComparisons.length} über dem Schnitt
                 </motion.p>
                 <motion.p
-                  className="text-emerald-400 text-lg font-medium"
+                  className="text-emerald-400 text-sm md:text-lg font-medium"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.6 }}
@@ -543,20 +537,20 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
             ) : aboveAvgCount >= 1 ? (
               <>
                 <motion.span
-                  className="text-5xl block mb-3"
+                  className="text-4xl md:text-5xl block mb-2 md:mb-3"
                   animate={{ scale: [1, 1.15, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
                   💪
                 </motion.span>
-                <p className="text-white/90 text-lg font-medium">
-                  In <span className="text-emerald-400 font-bold text-xl">{aboveAvgCount}</span> {aboveAvgCount === 1 ? "Kategorie" : "Kategorien"} über dem Schnitt!
+                <p className="text-white/90 text-sm md:text-lg font-medium">
+                  In <span className="text-emerald-400 font-bold text-base md:text-xl">{aboveAvgCount}</span> {aboveAvgCount === 1 ? "Kategorie" : "Kategorien"} über dem Schnitt!
                 </p>
               </>
             ) : (
               <>
-                <span className="text-5xl block mb-3">🎯</span>
-                <p className="text-white/70 text-lg">
+                <span className="text-4xl md:text-5xl block mb-2 md:mb-3">🎯</span>
+                <p className="text-white/70 text-sm md:text-lg">
                   Deine Basis für ein starkes {stats.year + 1}!
                 </p>
               </>
@@ -569,9 +563,9 @@ export default function ComparisonSlide({ stats }: ComparisonSlideProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5 }}
-          className="mt-5 text-white/20 text-xs"
+          className="mt-3 md:mt-5 text-white/20 text-[10px] md:text-xs"
         >
-          Quellen: Strava Year in Sport 2024, Garmin Connect 2024, UK Gov Statistics
+          Quellen: Strava 2024, Garmin 2024
         </motion.p>
       </div>
     </SlideWrapper>

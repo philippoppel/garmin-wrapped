@@ -243,11 +243,21 @@ function WeeklyChart({ byDay }: { byDay: { [key: string]: number } }) {
   );
 }
 
-// Monthly trend chart
+// Monthly trend chart with detailed breakdown
 function MonthlyChart({ monthlySteps, bestMonth }: { monthlySteps: number[]; bestMonth: { name: string; steps: number } }) {
+  const activeMonths = monthlySteps.filter(s => s > 0);
   const maxSteps = Math.max(...monthlySteps, 1);
+  const minSteps = activeMonths.length > 0 ? Math.min(...activeMonths) : 0;
+  const avgSteps = activeMonths.length > 0
+    ? activeMonths.reduce((sum, s) => sum + s, 0) / activeMonths.length
+    : 0;
   const months = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+  const monthNames = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+
+  // Find best and worst month indices
+  const bestIndex = monthlySteps.indexOf(maxSteps);
+  const worstIndex = activeMonths.length > 0 ? monthlySteps.indexOf(minSteps) : -1;
+
   const formatSteps = (steps: number) => {
     if (steps >= 10000) {
       return `${(steps / 1000).toFixed(0)}k`;
@@ -260,36 +270,80 @@ function MonthlyChart({ monthlySteps, bestMonth }: { monthlySteps: number[]; bes
 
   return (
     <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 h-full flex flex-col transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:shadow-[0_12px_30px_rgba(0,0,0,0.25)]">
-      <div className="text-xs text-white/50 text-center">Monatlicher Trend</div>
-      <div className="flex flex-col flex-1 justify-center mt-2">
-        <div className="flex items-end justify-between gap-1 h-full">
+      {/* Header with average */}
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs text-white/50">Schritte pro Monat</span>
+        <span className="text-[10px] text-white/60 bg-white/10 border border-white/10 px-2 py-0.5 rounded-full">
+          Ø {formatSteps(avgSteps)}/Tag
+        </span>
+      </div>
+
+      {/* Bar chart */}
+      <div className="flex-1 flex flex-col justify-end min-h-[100px]">
+        <div className="flex items-end justify-between gap-1 h-24">
           {monthlySteps.map((steps, i) => {
             const height = (steps / maxSteps) * 100;
-            const isBest = monthNames[i] === bestMonth.name;
+            const isBest = i === bestIndex && steps > 0;
+            const isWorst = i === worstIndex && steps > 0 && worstIndex !== bestIndex;
+            const deltaPct = avgSteps > 0 ? ((steps - avgSteps) / avgSteps) * 100 : 0;
+
+            const barClass = isBest
+              ? "bg-gradient-to-t from-cyan-500 to-blue-400 shadow-[0_0_10px_rgba(34,211,238,0.4)]"
+              : isWorst
+                ? "bg-gradient-to-t from-amber-600 to-amber-400"
+                : steps > avgSteps
+                  ? "bg-gradient-to-t from-cyan-600/60 to-cyan-400/60"
+                  : "bg-cyan-500/30";
 
             return (
-              <div key={i} className="relative flex-1 h-full group">
-                <motion.div
-                  className={`absolute bottom-0 w-full rounded-t ${isBest ? "bg-gradient-to-t from-cyan-500 to-blue-400" : "bg-cyan-500/30"}`}
-                  initial={{ height: 0 }}
-                  animate={{ height: `${Math.max(height, 3)}%` }}
-                  transition={{ delay: 1 + i * 0.05, duration: 0.4 }}
-                />
-                <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/70 px-2 py-1 text-[10px] text-white/80 opacity-0 transition-opacity group-hover:opacity-100">
-                  {monthNames[i]}: {formatSteps(steps)}/Tag
+              <div key={i} className="relative flex-1 h-full group flex flex-col items-center">
+                {/* Bar */}
+                <div className="flex-1 w-full flex items-end justify-center">
+                  <motion.div
+                    className={`w-full max-w-[18px] rounded-t ${barClass}`}
+                    initial={{ height: 0 }}
+                    animate={{ height: `${Math.max(height, steps > 0 ? 8 : 3)}%` }}
+                    transition={{ delay: 1 + i * 0.05, duration: 0.4 }}
+                  />
+                </div>
+
+                {/* Month label */}
+                <span className={`text-[9px] mt-1 ${isBest ? "text-cyan-300 font-bold" : isWorst ? "text-amber-300" : "text-white/40"}`}>
+                  {months[i]}
+                </span>
+
+                {/* Tooltip on hover */}
+                <div className="pointer-events-none absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/80 px-2 py-1.5 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100 z-10">
+                  <div className="font-medium">{monthNames[i]}</div>
+                  <div className="text-white/70">{formatSteps(steps)}/Tag</div>
+                  {steps > 0 && (
+                    <div className={deltaPct >= 0 ? "text-emerald-400" : "text-amber-400"}>
+                      {deltaPct >= 0 ? "+" : ""}{deltaPct.toFixed(0)}% vs Ø
+                    </div>
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
-        <div className="flex justify-between text-[8px] text-white/30 mt-1">
-          {months.map((m, i) => (
-            <span key={i}>{m}</span>
-          ))}
-        </div>
       </div>
-      <div className="text-center text-xs text-cyan-400 mt-3">
-        Bester Monat: {bestMonth.name} ({(bestMonth.steps / 1000).toFixed(0)}k/Tag)
+
+      {/* Best/Worst summary */}
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="flex items-center justify-between rounded-lg bg-cyan-500/10 border border-cyan-500/20 px-2 py-1.5">
+          <div className="flex items-center gap-1.5">
+            <span className="text-cyan-400">▲</span>
+            <span className="text-[10px] text-white/60">{monthNames[bestIndex]}</span>
+          </div>
+          <span className="text-xs font-medium text-cyan-300">{formatSteps(maxSteps)}</span>
+        </div>
+        <div className="flex items-center justify-between rounded-lg bg-amber-500/10 border border-amber-500/20 px-2 py-1.5">
+          <div className="flex items-center gap-1.5">
+            <span className="text-amber-400">▼</span>
+            <span className="text-[10px] text-white/60">{worstIndex >= 0 ? monthNames[worstIndex] : "-"}</span>
+          </div>
+          <span className="text-xs font-medium text-amber-300">{worstIndex >= 0 ? formatSteps(minSteps) : "-"}</span>
+        </div>
       </div>
     </div>
   );

@@ -522,20 +522,10 @@ export default function WrappedViewer({ stats, previousYearStats, onExport, onSh
               <ChevronLeft className="w-6 h-6" />
             </button>
 
-            {/* Center buttons - show export on last slide */}
+            {/* Center buttons - show "Weiter" except on last slide */}
             {isLastSlide ? (
-              <div className="flex gap-2">
-                <Button onClick={onExport} variant="primary" size="md">
-                  <Download className="w-4 h-4" />
-                  <span className="hidden sm:inline">Speichern</span>
-                </Button>
-                {onShare && (
-                  <Button onClick={onShare} variant="secondary" size="md">
-                    <Share2 className="w-4 h-4" />
-                    <span className="hidden sm:inline">Teilen</span>
-                  </Button>
-                )}
-              </div>
+              /* Last slide has its own share buttons in FinalShareSlide */
+              <div className="text-white/30 text-sm">Fertig!</div>
             ) : (
               <button
                 onClick={nextSlide}

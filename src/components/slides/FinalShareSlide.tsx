@@ -222,13 +222,21 @@ interface CustomStat {
   category: "distance" | "time" | "health" | "fun" | "records";
 }
 
+// Helper to format large numbers compactly
+const formatCompact = (n: number, unit: string = ""): string => {
+  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M${unit}`;
+  if (n >= 10000) return `${Math.round(n / 1000)}k${unit}`;
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k${unit}`;
+  return `${Math.round(n)}${unit}`;
+};
+
 const CUSTOM_STATS: CustomStat[] = [
   // Distance & Activity
   {
     id: "total-distance",
-    label: "Gesamtdistanz",
+    label: "Distanz",
     icon: <Route className="w-5 h-5" />,
-    getValue: (s) => `${s.totalDistance.toLocaleString("de-DE")} km`,
+    getValue: (s) => formatCompact(s.totalDistance, " km"),
     available: () => true,
     category: "distance",
   },
@@ -244,46 +252,46 @@ const CUSTOM_STATS: CustomStat[] = [
     id: "total-elevation",
     label: "Höhenmeter",
     icon: <Mountain className="w-5 h-5" />,
-    getValue: (s) => `${Math.round(s.totalElevation).toLocaleString("de-DE")} m`,
+    getValue: (s) => formatCompact(s.totalElevation, " m"),
     available: (s) => s.totalElevation > 0,
     category: "distance",
   },
   {
     id: "running-distance",
-    label: "Lauf-Kilometer",
+    label: "Laufen",
     icon: <Footprints className="w-5 h-5" />,
-    getValue: (s) => s.byType.running ? `${Math.round(s.byType.running.totalDistance).toLocaleString("de-DE")} km` : null,
+    getValue: (s) => s.byType.running ? formatCompact(s.byType.running.totalDistance, " km") : null,
     available: (s) => !!s.byType.running,
     category: "distance",
   },
   {
     id: "cycling-distance",
-    label: "Rad-Kilometer",
+    label: "Radfahren",
     icon: <Bike className="w-5 h-5" />,
-    getValue: (s) => s.byType.cycling ? `${Math.round(s.byType.cycling.totalDistance).toLocaleString("de-DE")} km` : null,
+    getValue: (s) => s.byType.cycling ? formatCompact(s.byType.cycling.totalDistance, " km") : null,
     available: (s) => !!s.byType.cycling,
     category: "distance",
   },
   {
     id: "swimming-distance",
-    label: "Schwimm-Meter",
+    label: "Schwimmen",
     icon: <Waves className="w-5 h-5" />,
-    getValue: (s) => s.byType.swimming ? `${Math.round(s.byType.swimming.totalDistance * 1000).toLocaleString("de-DE")} m` : null,
+    getValue: (s) => s.byType.swimming ? formatCompact(s.byType.swimming.totalDistance * 1000, " m") : null,
     available: (s) => !!s.byType.swimming,
     category: "distance",
   },
   // Time
   {
     id: "total-time",
-    label: "Trainingszeit",
+    label: "Zeit",
     icon: <Timer className="w-5 h-5" />,
-    getValue: (s) => `${Math.round(s.totalDuration)} Std`,
+    getValue: (s) => `${Math.round(s.totalDuration)} h`,
     available: () => true,
     category: "time",
   },
   {
     id: "training-days",
-    label: "Trainingstage",
+    label: "Tage",
     icon: <Calendar className="w-5 h-5" />,
     getValue: (s) => Math.round(s.totalDuration / 24).toString(),
     available: (s) => s.totalDuration >= 24,
@@ -291,9 +299,9 @@ const CUSTOM_STATS: CustomStat[] = [
   },
   {
     id: "longest-streak",
-    label: "Längste Serie",
+    label: "Streak",
     icon: <TrendingUp className="w-5 h-5" />,
-    getValue: (s) => `${s.records.longestStreak} Tage`,
+    getValue: (s) => `${s.records.longestStreak} d`,
     available: (s) => s.records.longestStreak >= 3,
     category: "time",
   },
@@ -302,16 +310,16 @@ const CUSTOM_STATS: CustomStat[] = [
     id: "total-calories",
     label: "Kalorien",
     icon: <Flame className="w-5 h-5" />,
-    getValue: (s) => `${Math.round(s.totalCalories / 1000)}k kcal`,
+    getValue: (s) => formatCompact(s.totalCalories, " kcal"),
     available: (s) => s.totalCalories > 0,
     category: "health",
   },
   {
     id: "sweat-loss",
-    label: "Schweißverlust",
+    label: "Schweiß",
     icon: <Droplets className="w-5 h-5" />,
     getValue: (s) => s.wellnessInsights?.estimatedYearlySweatLossMl
-      ? `${Math.round(s.wellnessInsights.estimatedYearlySweatLossMl / 1000)} Liter`
+      ? `${Math.round(s.wellnessInsights.estimatedYearlySweatLossMl / 1000)} L`
       : null,
     available: (s) => !!s.wellnessInsights?.estimatedYearlySweatLossMl,
     category: "health",
@@ -330,9 +338,9 @@ const CUSTOM_STATS: CustomStat[] = [
   },
   {
     id: "avg-hr",
-    label: "Ø Herzfrequenz",
+    label: "Ø Puls",
     icon: <Heart className="w-5 h-5" />,
-    getValue: (s) => s.healthStats?.avgTrainingHR ? `${Math.round(s.healthStats.avgTrainingHR)} bpm` : null,
+    getValue: (s) => s.healthStats?.avgTrainingHR ? `${Math.round(s.healthStats.avgTrainingHR)}` : null,
     available: (s) => !!s.healthStats?.avgTrainingHR,
     category: "health",
   },
@@ -357,7 +365,7 @@ const CUSTOM_STATS: CustomStat[] = [
   // Fun comparisons
   {
     id: "pizzas",
-    label: "Pizzen verbrannt",
+    label: "Pizzen",
     icon: <Pizza className="w-5 h-5" />,
     getValue: (s) => Math.round(s.totalCalories / 800).toString(),
     available: (s) => s.totalCalories >= 8000,
@@ -365,7 +373,7 @@ const CUSTOM_STATS: CustomStat[] = [
   },
   {
     id: "everest",
-    label: "× Mount Everest",
+    label: "Everest",
     icon: <Mountain className="w-5 h-5" />,
     getValue: (s) => `${(s.totalElevation / 8849).toFixed(1)}×`,
     available: (s) => s.totalElevation >= 8849,
@@ -373,23 +381,23 @@ const CUSTOM_STATS: CustomStat[] = [
   },
   {
     id: "marathons",
-    label: "Marathon-Distanzen",
+    label: "Marathons",
     icon: <Trophy className="w-5 h-5" />,
-    getValue: (s) => Math.floor(s.totalDistance / 42.195).toString(),
+    getValue: (s) => `${Math.floor(s.totalDistance / 42.195)}×`,
     available: (s) => s.totalDistance >= 42.195,
     category: "fun",
   },
   {
     id: "netflix",
-    label: "Netflix-Staffeln",
+    label: "Netflix",
     icon: <Tv className="w-5 h-5" />,
-    getValue: (s) => (s.totalDuration / 10).toFixed(0),
+    getValue: (s) => `${(s.totalDuration / 10).toFixed(0)} Staffeln`,
     available: (s) => s.totalDuration >= 30,
     category: "fun",
   },
   {
     id: "berlin-paris",
-    label: "× Berlin-Paris",
+    label: "Berlin-Paris",
     icon: <Plane className="w-5 h-5" />,
     getValue: (s) => `${(s.totalDistance / 1050).toFixed(1)}×`,
     available: (s) => s.totalDistance >= 500,
@@ -644,26 +652,26 @@ function MediaBackground({ media }: { media: MediaProps }) {
   );
 }
 
-// Custom Card with selectable stats
+// Custom Card with selectable stats - compact layout for 5 stats
 function CustomCard({ stats, media, selectedStats }: { stats: YearStats; media: MediaProps; selectedStats: string[] }) {
   const displayStats = selectedStats
     .map(id => CUSTOM_STATS.find(s => s.id === id))
     .filter((s): s is CustomStat => s !== undefined && s.available(stats))
-    .slice(0, 6);
+    .slice(0, 5);
 
   return (
     <div className="w-full h-full relative overflow-hidden bg-[#0a0a0a]">
       <MediaBackground media={media} />
 
       {/* Content */}
-      <div className="relative z-10 w-full h-full flex flex-col p-6">
-        {/* Hero Header */}
-        <div className="text-center mb-auto pt-6">
-          <div className="text-white/60 text-[10px] font-bold tracking-[0.3em] uppercase mb-1">Mein Sportjahr</div>
+      <div className="relative z-10 w-full h-full flex flex-col p-4">
+        {/* Hero Header - Compact */}
+        <div className="text-center pt-4 pb-2">
+          <div className="text-white/60 text-[8px] font-bold tracking-[0.25em] uppercase mb-0.5">Mein Sportjahr</div>
           <div
-            className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500"
+            className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500"
             style={{
-              textShadow: "0 0 40px rgba(6, 182, 212, 0.5), 0 0 80px rgba(139, 92, 246, 0.3)",
+              textShadow: "0 0 30px rgba(6, 182, 212, 0.5), 0 0 60px rgba(139, 92, 246, 0.3)",
               WebkitTextStroke: "1px rgba(255,255,255,0.1)"
             }}
           >
@@ -671,32 +679,32 @@ function CustomCard({ stats, media, selectedStats }: { stats: YearStats; media: 
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="mt-auto">
-          <div className="backdrop-blur-sm bg-black/10 border border-white/10 rounded-3xl p-5">
-            <div className={`grid ${displayStats.length <= 4 ? "grid-cols-2" : "grid-cols-2"} gap-3`}>
+        {/* Stats Grid - Compact 2x3 layout */}
+        <div className="flex-1 flex items-end">
+          <div className="w-full backdrop-blur-sm bg-black/20 border border-white/10 rounded-2xl p-3">
+            <div className="grid grid-cols-2 gap-2">
               {displayStats.map((stat, i) => {
                 const value = stat.getValue(stats);
                 if (!value) return null;
 
-                // First stat is hero (larger)
-                const isHero = i === 0;
+                // First stat spans full width
+                const isFirst = i === 0;
 
                 return (
                   <div
                     key={stat.id}
-                    className={`p-3 text-center ${isHero ? "col-span-2 py-4" : ""}`}
+                    className={`text-center py-2 ${isFirst ? "col-span-2 pb-3 border-b border-white/10 mb-1" : "px-1"}`}
                   >
-                    <div className="flex items-center justify-center gap-2 mb-1">
-                      <span className={`${isHero ? "text-cyan-400" : "text-white/50"}`}>
+                    <div className="flex items-center justify-center gap-1.5 mb-0.5">
+                      <span className={`${isFirst ? "text-cyan-400" : "text-white/40"} [&>svg]:w-3.5 [&>svg]:h-3.5`}>
                         {stat.icon}
                       </span>
+                      <span className={`text-white/50 font-medium ${isFirst ? "text-[10px]" : "text-[9px]"}`}>
+                        {stat.label}
+                      </span>
                     </div>
-                    <div className={`font-bold text-white ${isHero ? "text-4xl" : "text-2xl"}`}>
+                    <div className={`font-bold text-white ${isFirst ? "text-2xl" : "text-lg"}`}>
                       {value}
-                    </div>
-                    <div className={`text-white/50 font-medium mt-1 ${isHero ? "text-sm" : "text-xs"}`}>
-                      {stat.label}
                     </div>
                   </div>
                 );
@@ -705,16 +713,13 @@ function CustomCard({ stats, media, selectedStats }: { stats: YearStats; media: 
           </div>
         </div>
 
-        {/* Branding with Logo & URL */}
-        <div className="flex items-center justify-center gap-2 mt-4 pb-2">
-          {/* Mini Logo */}
-          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center">
-            <Activity className="w-3 h-3 text-white" />
+        {/* Branding - Compact */}
+        <div className="flex items-center justify-center gap-1.5 mt-2 pb-1">
+          <div className="w-4 h-4 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 flex items-center justify-center">
+            <Activity className="w-2.5 h-2.5 text-white" />
           </div>
-          <div className="text-[11px] text-white/40 font-medium">
-            <span className="text-white/60">GWRAP</span>
-            <span className="mx-1.5 text-white/20">•</span>
-            <span>gwrap.vercel.app</span>
+          <div className="text-[9px] text-white/40 font-medium">
+            gwrap.vercel.app
           </div>
         </div>
       </div>
@@ -750,6 +755,7 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
   });
   const cardRef = useRef<HTMLDivElement>(null);
   const mobileCardRef = useRef<HTMLDivElement>(null);
+  const exportCardRef = useRef<HTMLDivElement>(null); // Hidden full-size element for export
   const videoRef = useRef<HTMLVideoElement>(null!);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -851,11 +857,10 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
     }
   }, [selectedCard, stats.year]);
 
-  // PNG Export for image
+  // PNG Export for image - always uses hidden full-size element
   const handleDownload = useCallback(async () => {
-    // Use mobile ref if visible, otherwise desktop ref
-    const activeCardRef = window.innerWidth < 1024 ? mobileCardRef.current : cardRef.current;
-    if (!activeCardRef) return;
+    // Always use the hidden full-size export element
+    if (!exportCardRef.current) return;
 
     // If video, use GIF export
     if (mediaType === "video" && profileVideo) {
@@ -864,8 +869,8 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
 
     setIsGenerating(true);
     try {
-      const canvas = await html2canvas(activeCardRef, {
-        scale: 3,
+      const canvas = await html2canvas(exportCardRef.current, {
+        scale: 3, // 360x640 * 3 = 1080x1920
         backgroundColor: null,
         useCORS: true,
       });
@@ -879,6 +884,53 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
       setIsGenerating(false);
     }
   }, [selectedCard, stats.year, mediaType, profileVideo, handleGifExport]);
+
+  // Share via Web Share API (for Instagram, WhatsApp, etc.)
+  const handleShare = useCallback(async () => {
+    // Always use the hidden full-size export element
+    if (!exportCardRef.current) return;
+
+    setIsGenerating(true);
+    try {
+      const canvas = await html2canvas(exportCardRef.current, {
+        scale: 3, // 360x640 * 3 = 1080x1920
+        backgroundColor: null,
+        useCORS: true,
+      });
+
+      // Convert canvas to blob
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => {
+          if (b) resolve(b);
+          else reject(new Error("Failed to create blob"));
+        }, "image/png");
+      });
+
+      const file = new File([blob], `garmin-wrapped-${stats.year}.png`, { type: "image/png" });
+
+      // Check if Web Share API with files is supported
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `Mein Sportjahr ${stats.year}`,
+          text: `Mein Garmin Wrapped ${stats.year} 🏃‍♂️💪`,
+        });
+      } else {
+        // Fallback: download the image
+        const link = document.createElement("a");
+        link.download = `garmin-wrapped-${stats.year}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      }
+    } catch (error) {
+      // User cancelled share or error
+      if ((error as Error).name !== "AbortError") {
+        console.error("Error sharing:", error);
+      }
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [stats.year]);
 
   // Toggle stat selection
   const toggleStat = (statId: string) => {
@@ -918,10 +970,21 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
         className="hidden"
       />
 
+      {/* Hidden full-size element for export (360x640 * scale 3 = 1080x1920) */}
+      <div className="fixed -left-[9999px] -top-[9999px] pointer-events-none">
+        <div
+          ref={exportCardRef}
+          className="overflow-hidden"
+          style={{ width: 360, height: 640 }}
+        >
+          {renderCard()}
+        </div>
+      </div>
+
       {/* ============================================ */}
       {/* DESKTOP LAYOUT */}
       {/* ============================================ */}
-      <div className="hidden lg:block slide-container-scroll bg-gradient-to-br from-[#0f0515] via-[#150a20] to-[#0a0510]">
+      <div className="hidden lg:flex min-h-[100dvh] flex-col items-center justify-center p-12 pb-28 overflow-y-auto bg-gradient-to-br from-[#0f0515] via-[#150a20] to-[#0a0510]">
         <PartyBackground />
 
         <div className="relative z-10 w-full flex flex-row items-center justify-center gap-12 px-4">
@@ -1151,13 +1214,13 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
       {/* ============================================ */}
       {/* MOBILE LAYOUT - Simple & Robust */}
       {/* ============================================ */}
-      <div className="lg:hidden min-h-[100dvh] bg-gradient-to-br from-[#0f0515] via-[#150a20] to-[#0a0510] pb-28 pt-4 overflow-y-auto">
+      <div className="lg:hidden min-h-[100dvh] bg-gradient-to-br from-[#0f0515] via-[#150a20] to-[#0a0510] pb-28 pt-6 overflow-y-auto">
         <div className="w-full px-4">
-          {/* Card Preview - Compact */}
-          <div className="flex justify-center mb-4">
-            <div className="relative w-full max-w-[180px]">
+          {/* Card Preview - Large & Prominent */}
+          <div className="flex justify-center mb-6">
+            <div className="relative w-full max-w-[260px]">
               <div
-                className="absolute -inset-3 rounded-3xl blur-2xl opacity-50"
+                className="absolute -inset-4 rounded-3xl blur-3xl opacity-60"
                 style={{ background: "linear-gradient(135deg, #8B5CF6, #06B6D4)" }}
               />
               <div
@@ -1166,9 +1229,6 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
                 style={{ aspectRatio: '9/16' }}
               >
                 {renderCard()}
-              </div>
-              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/50 backdrop-blur-sm border border-white/20">
-                <span className="text-white/70 text-[10px] font-medium">Live-Vorschau</span>
               </div>
             </div>
           </div>
@@ -1277,27 +1337,24 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
             </div>
           </div>
 
-          {/* Download Button */}
+          {/* Share Button */}
           <button
-            onClick={handleDownload}
+            onClick={handleShare}
             disabled={isGenerating}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-base flex items-center justify-center gap-2 active:scale-[0.98] transition disabled:opacity-70 relative overflow-hidden shadow-xl"
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold text-base flex items-center justify-center gap-2 active:scale-[0.98] transition disabled:opacity-70 relative overflow-hidden shadow-xl"
           >
-            {isGenerating && generatingProgress > 0 && (
-              <div
-                className="absolute inset-0 bg-white/20 transition-all duration-300"
-                style={{ width: `${generatingProgress}%` }}
-              />
-            )}
             <span className="relative flex items-center gap-2">
               {isGenerating ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <Download className="w-5 h-5" />
+                <Share2 className="w-5 h-5" />
               )}
-              {isGenerating ? `${generatingProgress}%...` : "Bild speichern"}
+              Teilen
             </span>
           </button>
+          <p className="text-center text-white/30 text-xs mt-2">
+            Öffnet Instagram, WhatsApp & mehr
+          </p>
         </div>
       </div>
     </>

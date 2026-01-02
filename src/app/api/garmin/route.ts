@@ -1365,59 +1365,13 @@ function processWellnessInsights(wellnessData: any, activities: any[]) {
   // Find months sorted by steps
   const monthNames = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
-  // Calculate floor data from activity elevation gain (1 floor ≈ 3m)
-  // This is more accurate than daily wellness API for active users
-  const METERS_PER_FLOOR = 3;
-  const weekdayFloorsTotal: { [key: string]: number } = { mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0 };
-  const weekdayFloorsCounts: { [key: string]: number } = { mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0 };
-  const weekdayNames = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-  let totalElevationFromActivities = 0;
-  let bestFloorDay = { date: null as string | null, floors: 0, activityName: "" };
-  const monthlyFloors: number[] = new Array(12).fill(0);
-
-  for (const activity of activities) {
-    const elevation = activity.elevationGain || 0;
-    if (elevation > 0) {
-      totalElevationFromActivities += elevation;
-      const activityDate = new Date(activity.startTimeLocal);
-      const weekday = activityDate.getDay();
-      const weekdayKey = weekdayNames[weekday];
-      const month = activityDate.getMonth();
-      const floorsFromActivity = elevation / METERS_PER_FLOOR;
-
-      weekdayFloorsTotal[weekdayKey] += floorsFromActivity;
-      weekdayFloorsCounts[weekdayKey]++;
-      monthlyFloors[month] += floorsFromActivity;
-
-      // Track best day
-      if (floorsFromActivity > bestFloorDay.floors) {
-        bestFloorDay = {
-          date: activityDate.toISOString().split("T")[0],
-          floors: floorsFromActivity,
-          activityName: activity.activityName || ""
-        };
-      }
-    }
-  }
-
-  // Calculate averages per weekday
+  // Floor data from Garmin API is fetched separately via floorData parameter
+  // This section just initializes the variables - actual data comes from fetchFloorData()
+  const totalFloorsClimbed = 0;
+  const avgDailyFloors = 0;
   const weeklyFloors: { [key: string]: number } = {};
-  for (const day of weekdayNames) {
-    if (weekdayFloorsCounts[day] > 0) {
-      weeklyFloors[day] = Math.round(weekdayFloorsTotal[day] / weekdayFloorsCounts[day] * 10) / 10;
-    } else {
-      weeklyFloors[day] = 0;
-    }
-  }
-
-  const totalFloorsClimbed = Math.round(totalElevationFromActivities / METERS_PER_FLOOR);
-  const uniqueActivityDays = new Set(activities.map((a: any) =>
-    new Date(a.startTimeLocal).toISOString().split("T")[0]
-  )).size;
-  const avgDailyFloors = uniqueActivityDays > 0
-    ? Math.round(totalFloorsClimbed / uniqueActivityDays * 10) / 10
-    : 0;
-  const hasRealFloorData = totalFloorsClimbed > 0;
+  const bestFloorDay = { date: null as string | null, floors: 0, activityName: "" };
+  const hasRealFloorData = false;
 
   // Sweat loss - try hydration data first, then fall back to activity waterEstimated
   const sweatLossSamples = wellnessData.sweatLossSamples || [];
@@ -1485,14 +1439,13 @@ function processWellnessInsights(wellnessData: any, activities: any[]) {
     monthlySteps: wellnessData.monthlySteps,
     bestMonth: { name: monthNames[bestMonth.month], steps: bestMonth.steps },
 
-    // Floors (calculated from elevation gain: 1 floor ≈ 3m)
+    // Floors - disabled until real Garmin floor API is integrated
+    // Use scripts/get_floors.py to fetch real floor data via Python
     totalFloorsClimbed,
     avgDailyFloors,
-    floorsFromActivities: totalFloorsClimbed,
+    floorsFromActivities: 0,
     weeklyFloors,
     hasRealFloorData,
-    bestFloorDay,
-    monthlyFloors: monthlyFloors.map(f => Math.round(f)),
 
     // Hydration / Sweat Loss
     avgDailySweatLossMl,
