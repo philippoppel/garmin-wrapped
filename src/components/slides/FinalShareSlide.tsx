@@ -1042,15 +1042,10 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
             transition={{ duration: 2, repeat: Infinity }}
           />
 
-          {/* Card Container - Smaller on mobile */}
+          {/* Card Container - Smaller on mobile, larger on desktop */}
           <div
             ref={cardRef}
-            className="relative overflow-hidden rounded-xl lg:rounded-3xl shadow-2xl"
-            style={{
-              aspectRatio: "9/16",
-              height: "min(45vh, 400px)",
-              minHeight: "280px"
-            }}
+            className="relative overflow-hidden rounded-xl lg:rounded-3xl shadow-2xl card-preview-size"
           >
             {renderCard()}
           </div>

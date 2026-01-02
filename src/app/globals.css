@@ -402,3 +402,24 @@ body {
   background-size: 200% 200%;
   animation: gradientShift 4s ease infinite;
 }
+
+/* Share Card Preview Size */
+.card-preview-size {
+  aspect-ratio: 9/16;
+  height: min(45vh, 400px);
+  min-height: 280px;
+}
+
+@media (min-width: 1024px) {
+  .card-preview-size {
+    height: min(75vh, 600px);
+    min-height: 450px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .card-preview-size {
+    height: min(80vh, 700px);
+    min-height: 500px;
+  }
+}
