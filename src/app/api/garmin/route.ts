@@ -219,6 +219,9 @@ async function fetchWellnessData(client: any, year: number) {
     bestStepsDay: { date: null, steps: 0 },
     userSettings: null,
     sweatLossSamples: [],
+    // Floor data - sampled from a few days only to avoid rate limiting
+    floorSamples: [],
+    floorDataAvailable: false,
   };
 
   // Get user settings for VO2Max and other metrics
@@ -363,6 +366,42 @@ async function fetchWellnessData(client: any, year: number) {
       wellnessData.weeklySteps[dayKey] = Math.round(wellnessData.weeklySteps[dayKey] / count);
     }
   }
+
+  // Fetch REAL floor data - only 7 samples spread across the year to avoid rate limiting
+  console.log("Fetching floor data samples...");
+  const floorSampleDates = [];
+  for (let month = 0; month < 12; month += 2) {
+    // Sample every 2 months = 6 samples
+    const sampleDate = new Date(year, month, 15);
+    if (sampleDate <= today && sampleDate.getFullYear() === year) {
+      floorSampleDates.push(sampleDate);
+    }
+  }
+
+  for (const sampleDate of floorSampleDates) {
+    const dateStr = sampleDate.toISOString().split("T")[0];
+    try {
+      // Try the daily summary endpoint which includes floorsClimbed
+      const dailySummary = await client.get(
+        `https://connect.garmin.com/modern/proxy/usersummary-service/usersummary/daily/${dateStr}`,
+        {}
+      ).catch(() => null);
+
+      if (dailySummary && typeof dailySummary.floorsClimbed === "number" && dailySummary.floorsClimbed > 0) {
+        wellnessData.floorSamples.push({
+          date: sampleDate,
+          floors: dailySummary.floorsClimbed,
+          floorsGoal: dailySummary.floorsClimbedGoal || null,
+        });
+        wellnessData.floorDataAvailable = true;
+        console.log(`  Floor data for ${dateStr}: ${dailySummary.floorsClimbed} floors`);
+      }
+    } catch (e) {
+      // Floor data not available for this date
+    }
+  }
+
+  console.log(`Floor data: ${wellnessData.floorSamples.length} samples, available: ${wellnessData.floorDataAvailable}`);
 
   // Calculate monthly averages
   for (let m = 0; m < 12; m++) {
@@ -1362,34 +1401,57 @@ function processWellnessInsights(wellnessData: any, activities: any[]) {
   // Find months sorted by steps
   const monthNames = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
-  // Calculate floors from elevation gain (1 floor ≈ 3 meters)
-  const totalElevation = activities.reduce((sum: number, a: any) => {
-    return sum + (a.elevationGain || 0);
-  }, 0);
-  const totalFloorsClimbed = Math.round(totalElevation / 3);
-
-  // Calculate weekday elevation/floors pattern from activities
-  const weekdayElevation: { [key: string]: number } = { sun: 0, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 };
-  const weekdayCounts: { [key: string]: number } = { sun: 0, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 };
+  // Floor data - use REAL Garmin data if available, otherwise fall back to elevation estimate
+  let totalFloorsClimbed = 0;
+  let avgDailyFloors = 0;
+  let hasRealFloorData = false;
+  const weeklyFloors: { [key: string]: number } = { sun: 0, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 };
   const dayNames = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
-  for (const activity of activities) {
-    const dayOfWeek = new Date(activity.startTimeLocal).getDay();
-    const dayKey = dayNames[dayOfWeek];
-    weekdayElevation[dayKey] += activity.elevationGain || 0;
-    weekdayCounts[dayKey]++;
-  }
+  if (wellnessData.floorDataAvailable && wellnessData.floorSamples.length > 0) {
+    // Use REAL floor data from Garmin API
+    hasRealFloorData = true;
+    const totalSampledFloors = wellnessData.floorSamples.reduce((sum: number, s: any) => sum + s.floors, 0);
+    avgDailyFloors = Math.round(totalSampledFloors / wellnessData.floorSamples.length);
+    totalFloorsClimbed = avgDailyFloors * 365;
 
-  // Calculate average floors per weekday
-  const weeklyFloors: { [key: string]: number } = {};
-  for (const day of dayNames) {
-    const avgElevation = weekdayCounts[day] > 0 ? weekdayElevation[day] / weekdayCounts[day] : 0;
-    weeklyFloors[day] = Math.round(avgElevation / 3); // Convert to floors
-  }
+    // Calculate weekly pattern from samples
+    const weekdayFloors: { [key: string]: number } = { sun: 0, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 };
+    const weekdayCounts: { [key: string]: number } = { sun: 0, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 };
+    for (const sample of wellnessData.floorSamples) {
+      const dayOfWeek = new Date(sample.date).getDay();
+      const dayKey = dayNames[dayOfWeek];
+      weekdayFloors[dayKey] += sample.floors;
+      weekdayCounts[dayKey]++;
+    }
+    for (const day of dayNames) {
+      weeklyFloors[day] = weekdayCounts[day] > 0 ? Math.round(weekdayFloors[day] / weekdayCounts[day]) : avgDailyFloors;
+    }
 
-  // Calculate average per day (over 365 days, not per activity)
-  const avgDailyFloors = Math.round(totalFloorsClimbed / 365);
-  const hasRealFloorData = totalElevation > 0;
+    console.log(`Using REAL floor data: ${avgDailyFloors}/day, ${totalFloorsClimbed}/year`);
+  } else {
+    // Fallback: estimate from elevation gain (1 floor ≈ 3 meters)
+    const totalElevation = activities.reduce((sum: number, a: any) => sum + (a.elevationGain || 0), 0);
+    totalFloorsClimbed = Math.round(totalElevation / 3);
+    avgDailyFloors = Math.round(totalFloorsClimbed / 365);
+    hasRealFloorData = totalElevation > 0;
+
+    // Calculate weekday pattern from activity elevation
+    const weekdayElevation: { [key: string]: number } = { sun: 0, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 };
+    const weekdayCounts: { [key: string]: number } = { sun: 0, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 };
+    for (const activity of activities) {
+      const dayOfWeek = new Date(activity.startTimeLocal).getDay();
+      const dayKey = dayNames[dayOfWeek];
+      weekdayElevation[dayKey] += activity.elevationGain || 0;
+      weekdayCounts[dayKey]++;
+    }
+    for (const day of dayNames) {
+      const avgElevation = weekdayCounts[day] > 0 ? weekdayElevation[day] / weekdayCounts[day] : 0;
+      weeklyFloors[day] = Math.round(avgElevation / 3);
+    }
+
+    console.log(`Using ESTIMATED floor data from elevation: ${avgDailyFloors}/day, ${totalFloorsClimbed}/year`);
+  }
 
   // Sweat loss - try hydration data first, then fall back to activity waterEstimated
   const sweatLossSamples = wellnessData.sweatLossSamples || [];
