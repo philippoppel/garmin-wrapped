@@ -68,15 +68,21 @@ function PowerGauge({ ftp, maxScale = 400 }: { ftp: number; maxScale?: number })
         />
 
         {/* Tick marks */}
-        {[0, 100, 200, 300, 400].map((val, i) => {
+        {[0, 100, 200, 300, 400].map((val) => {
           const angle = -135 + (val / maxScale) * 270;
           const rad = (angle * Math.PI) / 180;
           const innerR = 65;
           const outerR = 75;
+          const labelR = 52;
           const x1 = 100 + innerR * Math.cos(rad);
           const y1 = 100 + innerR * Math.sin(rad);
           const x2 = 100 + outerR * Math.cos(rad);
           const y2 = 100 + outerR * Math.sin(rad);
+          const labelX = 100 + labelR * Math.cos(rad);
+          const labelY = 100 + labelR * Math.sin(rad);
+
+          // Adjust text anchor based on position
+          const textAnchor = angle < -45 ? "end" : angle > 45 ? "start" : "middle";
 
           return (
             <g key={val}>
@@ -89,11 +95,12 @@ function PowerGauge({ ftp, maxScale = 400 }: { ftp: number; maxScale?: number })
                 strokeWidth="2"
               />
               <text
-                x={100 + 55 * Math.cos(rad)}
-                y={100 + 55 * Math.sin(rad)}
-                fill="rgba(255,255,255,0.4)"
-                fontSize="10"
-                textAnchor="middle"
+                x={labelX}
+                y={labelY}
+                fill="rgba(255,255,255,0.5)"
+                fontSize="11"
+                fontWeight="500"
+                textAnchor={textAnchor}
                 dominantBaseline="middle"
               >
                 {val}
@@ -139,17 +146,18 @@ function PowerGauge({ ftp, maxScale = 400 }: { ftp: number; maxScale?: number })
       </svg>
 
       {/* FTP Value overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center pt-8">
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 1.5, type: "spring" }}
+          className="text-center mt-4"
         >
-          <div className="text-4xl font-black text-white">
+          <div className="text-4xl font-black text-white leading-none">
             <CountingNumber value={Math.round(ftp)} delay={0.5} duration={2} />
-            <span className="text-xl text-white/60">W</span>
+            <span className="text-xl text-white/60 ml-0.5">W</span>
           </div>
-          <div className="text-xs text-white/40">FTP</div>
+          <div className="text-xs text-white/40 mt-1">FTP</div>
         </motion.div>
       </div>
     </div>
