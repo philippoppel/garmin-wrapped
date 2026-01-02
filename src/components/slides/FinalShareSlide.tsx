@@ -600,10 +600,18 @@ function CustomCard({ stats, media, selectedStats }: { stats: YearStats; media: 
 
       {/* Content */}
       <div className="relative z-10 w-full h-full flex flex-col p-6">
-        {/* Top Label */}
-        <div className="text-center mb-auto pt-4">
-          <div className="text-white/40 text-xs font-medium tracking-[0.2em] uppercase">Meine Stats</div>
-          <div className="text-white font-black text-3xl mt-1">{stats.year}</div>
+        {/* Hero Header */}
+        <div className="text-center mb-auto pt-6">
+          <div className="text-white/60 text-[10px] font-bold tracking-[0.3em] uppercase mb-1">Mein Sportjahr</div>
+          <div
+            className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500"
+            style={{
+              textShadow: "0 0 40px rgba(6, 182, 212, 0.5), 0 0 80px rgba(139, 92, 246, 0.3)",
+              WebkitTextStroke: "1px rgba(255,255,255,0.1)"
+            }}
+          >
+            {stats.year}
+          </div>
         </div>
 
         {/* Stats Grid */}
