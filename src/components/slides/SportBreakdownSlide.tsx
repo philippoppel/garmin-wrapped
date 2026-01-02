@@ -291,30 +291,30 @@ export default function SportBreakdownSlide({ stats }: SportBreakdownSlideProps)
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-4 md:mb-8"
+          className="mb-2 md:mb-8"
         >
-          <p className="text-white/40 text-[10px] md:text-sm uppercase tracking-wider mb-1 md:mb-2">Dein Athleten-Typ</p>
-          <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-1 md:mb-2">{athleteType.type}</h2>
-          <p className="text-white/50 text-sm md:text-lg">{athleteType.description}</p>
+          <p className="text-white/40 text-[10px] md:text-sm uppercase tracking-wider mb-0.5 md:mb-2">Dein Athleten-Typ</p>
+          <h2 className="text-xl sm:text-2xl md:text-5xl font-bold text-white mb-0.5 md:mb-2">{athleteType.type}</h2>
+          <p className="text-white/50 text-xs md:text-lg">{athleteType.description}</p>
         </motion.div>
 
         {/* Main Content: Donut + Legend */}
-        <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-12 mb-4 md:mb-8">
-          {/* Donut Chart */}
+        <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-12 mb-3 md:mb-8">
+          {/* Donut Chart - Smaller on mobile */}
           <motion.div
             initial={{ scale: 0, rotate: -90 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: "spring", bounce: 0.3, delay: 0.2 }}
             className="relative flex-shrink-0 overflow-hidden"
           >
-            <div className="w-[160px] h-[160px] sm:w-[200px] sm:h-[200px] md:w-[260px] md:h-[260px]">
+            <div className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] md:w-[260px] md:h-[260px]">
               <DonutChart segments={chartSegments} size={260} />
             </div>
 
             {/* Center content */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <SportIcon type={topSport} className="w-8 h-8 sm:w-10 sm:h-10 md:w-16 md:h-16 mb-0.5 md:mb-2" />
-              <span className="text-white/60 text-[10px] md:text-sm font-medium">#1</span>
+              <SportIcon type={topSport} className="w-6 h-6 sm:w-8 sm:h-8 md:w-16 md:h-16 mb-0 md:mb-2" />
+              <span className="text-white/60 text-[8px] sm:text-[10px] md:text-sm font-medium">#1</span>
             </div>
           </motion.div>
 
