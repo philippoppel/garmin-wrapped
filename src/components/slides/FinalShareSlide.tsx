@@ -1151,14 +1151,8 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
       {/* ============================================ */}
       {/* MOBILE LAYOUT - Simple & Robust */}
       {/* ============================================ */}
-      <div className="lg:hidden min-h-[100dvh] bg-gradient-to-br from-[#0f0515] via-[#150a20] to-[#0a0510] pb-28 pt-2 overflow-y-auto">
+      <div className="lg:hidden min-h-[100dvh] bg-gradient-to-br from-[#0f0515] via-[#150a20] to-[#0a0510] pb-28 pt-4 overflow-y-auto">
         <div className="w-full px-4">
-          {/* Header - Compact */}
-          <div className="text-center mb-4">
-            <h1 className="text-xl font-bold text-white">Teile dein Jahr!</h1>
-            <p className="text-white/40 text-xs">Erstelle deine Share Card</p>
-          </div>
-
           {/* Card Preview - Compact */}
           <div className="flex justify-center mb-4">
             <div className="relative w-full max-w-[180px]">
