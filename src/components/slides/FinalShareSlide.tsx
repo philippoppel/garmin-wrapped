@@ -657,7 +657,7 @@ function CustomCard({ stats, media, selectedStats }: { stats: YearStats; media: 
           <div className="text-[11px] text-white/40 font-medium">
             <span className="text-white/60">GWRAP</span>
             <span className="mx-1.5 text-white/20">•</span>
-            <span>garmin-wrapped.vercel.app</span>
+            <span>gwrap.vercel.app</span>
           </div>
         </div>
       </div>
