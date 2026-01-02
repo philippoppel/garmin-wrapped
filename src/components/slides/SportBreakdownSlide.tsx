@@ -319,7 +319,7 @@ export default function SportBreakdownSlide({ stats }: SportBreakdownSlideProps)
           </motion.div>
 
           {/* Legend */}
-          <div className="space-y-2 md:space-y-3 w-full max-w-sm md:max-w-none md:w-auto">
+          <div className="space-y-2 md:space-y-3 w-full max-w-xs sm:max-w-sm md:max-w-none md:w-auto">
             {expandedSports.slice(0, 5).map((item, index) => {
               const percent = Math.round((item.count / totalActivities) * 100);
 
@@ -329,28 +329,29 @@ export default function SportBreakdownSlide({ stats }: SportBreakdownSlideProps)
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + index * 0.08 }}
-                  className="grid items-center gap-2 md:gap-3"
-                  style={{ gridTemplateColumns: 'auto auto 1fr auto auto' }}
+                  className="flex items-center gap-2 md:gap-3"
                 >
                   {/* Color dot */}
                   <div
-                    className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full"
+                    className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full flex-shrink-0"
                     style={{ backgroundColor: item.color }}
                   />
                   {/* Icon */}
-                  {item.originalType ? (
-                    <SportIcon type={item.originalType} className="w-5 h-5 md:w-6 md:h-6" />
-                  ) : (
-                    <div className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center">
-                      <div className="w-3 h-3 md:w-4 md:h-4 rounded-full" style={{ backgroundColor: item.color, opacity: 0.6 }} />
-                    </div>
-                  )}
+                  <div className="flex-shrink-0">
+                    {item.originalType ? (
+                      <SportIcon type={item.originalType} className="w-5 h-5 md:w-6 md:h-6" />
+                    ) : (
+                      <div className="w-5 h-5 md:w-6 md:h-6 flex items-center justify-center">
+                        <div className="w-3 h-3 md:w-4 md:h-4 rounded-full" style={{ backgroundColor: item.color, opacity: 0.6 }} />
+                      </div>
+                    )}
+                  </div>
                   {/* Name */}
-                  <span className="text-white text-sm md:text-base font-medium text-left truncate">{item.name}</span>
+                  <span className="text-white text-sm md:text-base font-medium text-left truncate min-w-0 flex-1">{item.name}</span>
                   {/* Count */}
-                  <span className="text-white text-sm md:text-base font-bold tabular-nums text-right">{item.count}x</span>
+                  <span className="text-white text-sm md:text-base font-bold tabular-nums flex-shrink-0">{item.count}x</span>
                   {/* Percent */}
-                  <span className="text-white/50 text-xs md:text-sm tabular-nums w-12 text-right">({percent}%)</span>
+                  <span className="text-white/50 text-xs md:text-sm tabular-nums flex-shrink-0">({percent}%)</span>
                 </motion.div>
               );
             })}
