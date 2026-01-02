@@ -182,17 +182,23 @@ function getKipchogeComparison(totalKm: number, avgPaceMinPerKm: number): { text
   const kipchogePace = 2.85;
 
   if (avgPaceMinPerKm > 0 && avgPaceMinPerKm < 10) {
-    // In a 5K race, how far ahead would Kipchoge be?
-    const your5kTime = avgPaceMinPerKm * 5; // minutes
-    const kipchoge5kTime = kipchogePace * 5; // ~14.25 minutes
-    const timeDiff = your5kTime - kipchoge5kTime;
-    const distanceAhead = (timeDiff * 1000) / avgPaceMinPerKm; // meters
+    // When you finish 5K, where would Kipchoge be?
+    const your5kTime = avgPaceMinPerKm * 5; // minutes for your 5K
+    const kipchogeDistanceInYourTime = (your5kTime / kipchogePace); // km Kipchoge runs in your 5K time
 
-    if (distanceAhead > 0) {
-      return {
-        text: `${Math.round(distanceAhead)}m`,
-        subtext: "Kipchoge wäre vor dir (5K)"
-      };
+    if (kipchogeDistanceInYourTime > 5) {
+      const kmAhead = kipchogeDistanceInYourTime - 5;
+      if (kmAhead >= 1) {
+        return {
+          text: `+${kmAhead.toFixed(1)} km`,
+          subtext: "wäre Kipchoge bei deinem 5K-Ziel"
+        };
+      } else {
+        return {
+          text: `+${Math.round(kmAhead * 1000)}m`,
+          subtext: "wäre Kipchoge bei deinem 5K-Ziel"
+        };
+      }
     }
   }
 
