@@ -295,73 +295,197 @@ function MonthlyChart({ monthlySteps, bestMonth }: { monthlySteps: number[]; bes
   );
 }
 
-// Floors climbed visualization with weekday distribution
-function FloorsVisualization({ totalFloors, avgDaily, weeklyFloors }: { totalFloors: number; avgDaily: number; weeklyFloors?: { [key: string]: number } }) {
-  const burjKhalifaClimbs = totalFloors / 163;
-  const empireStateClimbs = totalFloors / 102;
+// Floors climbed visualization with cool comparisons
+function FloorsVisualization({
+  totalFloors,
+  avgDaily,
+  weeklyFloors,
+  bestFloorDay,
+  totalElevation
+}: {
+  totalFloors: number;
+  avgDaily: number;
+  weeklyFloors?: { [key: string]: number };
+  bestFloorDay?: { date: string | null; floors: number; activityName: string };
+  totalElevation: number;
+}) {
+  // Famous building comparisons (floors)
+  const burjKhalifaFloors = 163;
+  const empireStateFloors = 102;
+  const eiffelTowerFloors = 108; // Approximate (to observation deck)
+  const bigBenFloors = 334 / 3; // 334 steps ≈ 111 floors
 
-  // Use actual floor data from Garmin
+  const burjKhalifaClimbs = totalFloors / burjKhalifaFloors;
+  const empireStateClimbs = totalFloors / empireStateFloors;
+  const eiffelTowerClimbs = totalFloors / eiffelTowerFloors;
+
+  // Mountain comparisons (using actual elevation in meters)
+  const mountEverest = 8849;
+  const alpesHuez = 1120; // Famous cycling climb
+  const stephansdom = 136.4; // Vienna cathedral tower height
+  const grossglockner = 3798;
+
+  const everestClimbs = totalElevation / mountEverest;
+  const alpesHuezClimbs = totalElevation / alpesHuez;
+  const stephansdomClimbs = totalElevation / stephansdom;
+
+  // Weekday data
   const weekdays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
   const dayKeys = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-
   const floorsByDay = dayKeys.map((key) => weeklyFloors?.[key] || 0);
-  const hasData = floorsByDay.some(f => f > 0);
+  const hasWeekdayData = floorsByDay.some(f => f > 0);
   const maxFloors = Math.max(...floorsByDay, 1);
+  const bestDayIndex = floorsByDay.indexOf(Math.max(...floorsByDay));
+
+  // Best comparison based on total
+  const primaryComparison = totalElevation >= mountEverest
+    ? { emoji: "🏔️", value: everestClimbs.toFixed(1), label: "Mount Everest", color: "text-cyan-300" }
+    : totalElevation >= alpesHuez * 5
+      ? { emoji: "🚴", value: alpesHuezClimbs.toFixed(0), label: "Alpe d'Huez", color: "text-yellow-300" }
+      : { emoji: "⛪", value: stephansdomClimbs.toFixed(0), label: "Stephansdom", color: "text-purple-300" };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 1.2 }}
-      className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl p-4 transition-all duration-300 hover:border-amber-400/60 hover:shadow-[0_12px_30px_rgba(120,53,15,0.25)] hover:-translate-y-0.5"
+      className="bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-500/30 rounded-xl p-4 transition-all duration-300 hover:border-amber-400/60 hover:shadow-[0_12px_30px_rgba(120,53,15,0.25)] hover:-translate-y-0.5"
     >
-      <div className="flex items-center justify-between mb-3">
+      {/* Header with main stats */}
+      <div className="flex items-start justify-between mb-4">
         <div>
-          <div className="text-xs text-white/50 mb-1">Stockwerke erklommen</div>
-          <div className="text-3xl font-bold text-amber-400">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-lg">🪜</span>
+            <span className="text-xs text-white/50 uppercase tracking-wider">Stockwerke erklommen</span>
+          </div>
+          <div className="text-4xl font-bold text-amber-400">
             <CountingNumber value={totalFloors} delay={1.3} />
           </div>
-          <div className="text-xs text-white/50">{avgDaily} pro Tag</div>
+          <div className="text-sm text-white/60 mt-1">
+            {totalElevation.toLocaleString("de-DE")} Höhenmeter total
+          </div>
         </div>
 
-        <div className="flex flex-col items-end gap-1">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-white/60">= {burjKhalifaClimbs.toFixed(1)}x</span>
-            <span>🏗️</span>
-            <span className="text-amber-300">Burj Khalifa</span>
+        {/* Primary comparison highlight */}
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 1.5, type: "spring" }}
+          className="text-right bg-white/5 rounded-lg px-3 py-2"
+        >
+          <div className="text-2xl mb-1">{primaryComparison.emoji}</div>
+          <div className={`text-xl font-bold ${primaryComparison.color}`}>
+            {primaryComparison.value}x
           </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-white/60">= {empireStateClimbs.toFixed(1)}x</span>
-            <span>🗽</span>
-            <span className="text-orange-300">Empire State</span>
-          </div>
-        </div>
+          <div className="text-[10px] text-white/50">{primaryComparison.label}</div>
+        </motion.div>
       </div>
 
+      {/* Building comparisons grid */}
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.6 }}
+          className="bg-white/5 rounded-lg p-2 text-center"
+        >
+          <div className="text-lg">🗼</div>
+          <div className="text-lg font-bold text-amber-300">{burjKhalifaClimbs.toFixed(1)}x</div>
+          <div className="text-[9px] text-white/40">Burj Khalifa</div>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.7 }}
+          className="bg-white/5 rounded-lg p-2 text-center"
+        >
+          <div className="text-lg">🗽</div>
+          <div className="text-lg font-bold text-orange-300">{empireStateClimbs.toFixed(1)}x</div>
+          <div className="text-[9px] text-white/40">Empire State</div>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.8 }}
+          className="bg-white/5 rounded-lg p-2 text-center"
+        >
+          <div className="text-lg">🗼</div>
+          <div className="text-lg font-bold text-red-300">{eiffelTowerClimbs.toFixed(1)}x</div>
+          <div className="text-[9px] text-white/40">Eiffelturm</div>
+        </motion.div>
+      </div>
+
+      {/* Best floor day highlight */}
+      {bestFloorDay && bestFloorDay.floors > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.9 }}
+          className="bg-gradient-to-r from-amber-500/20 to-transparent border-l-2 border-amber-400 px-3 py-2 rounded-r mb-3"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-[10px] text-white/50">Rekord-Tag: </span>
+              <span className="text-sm font-medium text-amber-300">
+                {Math.round(bestFloorDay.floors)} Stockwerke
+              </span>
+            </div>
+            <div className="text-[10px] text-white/40">
+              {bestFloorDay.date && new Date(bestFloorDay.date).toLocaleDateString("de-DE", { day: "numeric", month: "short" })}
+            </div>
+          </div>
+          {bestFloorDay.activityName && (
+            <div className="text-[10px] text-white/40 truncate">{bestFloorDay.activityName}</div>
+          )}
+        </motion.div>
+      )}
+
       {/* Weekday distribution */}
-      {hasData && (
-        <div className="mt-2">
-          <div className="text-[10px] text-white/40 mb-2">Ø Stockwerke pro Wochentag</div>
-          <div className="flex items-end justify-between gap-1 h-12">
-            {floorsByDay.map((floors, i) => (
-              <div key={i} className="flex flex-col items-center flex-1">
-                <motion.div
-                  initial={{ scaleY: 0 }}
-                  animate={{ scaleY: 1 }}
-                  transition={{ delay: 1.5 + i * 0.05 }}
-                  className="w-full max-w-[20px] bg-gradient-to-t from-amber-600 to-amber-400 rounded-t"
-                  style={{
-                    height: `${(floors / maxFloors) * 32}px`,
-                    transformOrigin: "bottom",
-                    minHeight: floors > 0 ? "4px" : "0px"
-                  }}
-                />
-                <span className="text-[9px] text-white/50 mt-1">{weekdays[i]}</span>
-              </div>
-            ))}
+      {hasWeekdayData && (
+        <div>
+          <div className="text-[10px] text-white/40 mb-2">Ø Stockwerke pro Aktivitäts-Tag</div>
+          <div className="flex items-end justify-between gap-1 h-14">
+            {floorsByDay.map((floors, i) => {
+              const isBest = i === bestDayIndex && floors > 0;
+              return (
+                <div key={i} className="flex flex-col items-center flex-1 group relative">
+                  <motion.div
+                    initial={{ scaleY: 0 }}
+                    animate={{ scaleY: 1 }}
+                    transition={{ delay: 2.0 + i * 0.05 }}
+                    className={`w-full max-w-[24px] rounded-t ${
+                      isBest
+                        ? "bg-gradient-to-t from-amber-500 to-yellow-400 shadow-[0_0_10px_rgba(245,158,11,0.4)]"
+                        : "bg-gradient-to-t from-amber-700 to-amber-500"
+                    }`}
+                    style={{
+                      height: `${(floors / maxFloors) * 40}px`,
+                      transformOrigin: "bottom",
+                      minHeight: floors > 0 ? "4px" : "2px"
+                    }}
+                  />
+                  <span className={`text-[9px] mt-1 ${isBest ? "text-amber-300 font-bold" : "text-white/50"}`}>
+                    {weekdays[i]}
+                  </span>
+                  {/* Tooltip on hover */}
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/80 px-2 py-1 rounded text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                    {floors.toFixed(1)} Stockwerke
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
+
+      {/* Daily average badge */}
+      <div className="flex justify-center mt-3">
+        <div className="inline-flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full">
+          <span className="text-[10px] text-white/50">Ø pro Aktivitäts-Tag:</span>
+          <span className="text-sm font-bold text-amber-400">{avgDaily}</span>
+          <span className="text-[10px] text-white/50">Stockwerke</span>
+        </div>
+      </div>
     </motion.div>
   );
 }
@@ -542,8 +666,20 @@ export default function StepsSlide({ stats }: StepsSlideProps) {
           <MonthlyChart monthlySteps={wellness.monthlySteps} bestMonth={wellness.bestMonth} />
         </div>
 
-        {/* Distance comparison */}
-        <div className="mb-4">
+        {/* Floors and Distance row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          {/* Floors visualization - only show if we have floor data */}
+          {wellness.hasRealFloorData && wellness.totalFloorsClimbed > 0 && (
+            <FloorsVisualization
+              totalFloors={wellness.totalFloorsClimbed}
+              avgDaily={wellness.avgDailyFloors}
+              weeklyFloors={wellness.weeklyFloors}
+              bestFloorDay={wellness.bestFloorDay}
+              totalElevation={stats.totalElevation}
+            />
+          )}
+
+          {/* Distance comparison */}
           <DistanceComparison totalSteps={wellness.estimatedYearlySteps} />
         </div>
 
