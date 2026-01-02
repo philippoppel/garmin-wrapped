@@ -1151,20 +1151,17 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
       {/* ============================================ */}
       {/* MOBILE LAYOUT - Simple & Robust */}
       {/* ============================================ */}
-      <div className="lg:hidden min-h-screen bg-gradient-to-br from-[#0f0515] via-[#150a20] to-[#0a0510] pb-8">
-        <div className="w-full px-4 pt-4">
-          {/* Header */}
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 mb-3">
-              <Share2 className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-white">Teile dein Jahr!</h1>
-            <p className="text-white/50 text-sm mt-1">Erstelle deine persönliche Share Card</p>
+      <div className="lg:hidden min-h-[100dvh] bg-gradient-to-br from-[#0f0515] via-[#150a20] to-[#0a0510] pb-28 pt-2 overflow-y-auto">
+        <div className="w-full px-4">
+          {/* Header - Compact */}
+          <div className="text-center mb-4">
+            <h1 className="text-xl font-bold text-white">Teile dein Jahr!</h1>
+            <p className="text-white/40 text-xs">Erstelle deine Share Card</p>
           </div>
 
-          {/* Card Preview - Full width responsive */}
-          <div className="flex justify-center mb-6">
-            <div className="relative w-full max-w-[240px]">
+          {/* Card Preview - Compact */}
+          <div className="flex justify-center mb-4">
+            <div className="relative w-full max-w-[180px]">
               <div
                 className="absolute -inset-3 rounded-3xl blur-2xl opacity-50"
                 style={{ background: "linear-gradient(135deg, #8B5CF6, #06B6D4)" }}
@@ -1182,16 +1179,16 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
             </div>
           </div>
 
-          {/* Photo/Video Upload - Simple */}
-          <div className="mb-6">
-            <p className="text-white/50 text-xs uppercase tracking-wider mb-2 font-medium">Hintergrundbild</p>
+          {/* Photo/Video Upload - Compact */}
+          <div className="mb-4">
+            <p className="text-white/40 text-[10px] uppercase tracking-wider mb-1.5 font-medium">Hintergrundbild (optional)</p>
             {!profileImage && !profileVideo ? (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full p-4 rounded-xl bg-white/5 border-2 border-dashed border-white/20 flex items-center justify-center gap-3 active:bg-white/10 transition"
+                className="w-full p-3 rounded-xl bg-white/5 border border-dashed border-white/20 flex items-center justify-center gap-2 active:bg-white/10 transition"
               >
-                <Camera className="w-6 h-6 text-white/50" />
-                <span className="text-white/70 text-sm font-medium">Foto oder Video auswählen</span>
+                <Camera className="w-5 h-5 text-white/50" />
+                <span className="text-white/60 text-sm">Foto/Video auswählen</span>
               </button>
             ) : (
               <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
@@ -1225,21 +1222,24 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
             )}
           </div>
 
-          {/* Stats Selection - Simplified */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-white/50 text-xs uppercase tracking-wider font-medium">Deine Stats ({selectedCustomStats.length}/5)</p>
-              <button
-                onClick={randomizeStats}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-purple-500/20 border border-purple-500/40 text-purple-300 active:bg-purple-500/30 transition font-medium"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                Zufällig
-              </button>
+          {/* Stats Selection - Compact */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-white/40 text-[10px] uppercase tracking-wider font-medium">Wähle 5 Stats</p>
+              <div className="flex items-center gap-2">
+                <span className="text-white/30 text-[10px]">{selectedCustomStats.length}/5</span>
+                <button
+                  onClick={randomizeStats}
+                  className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] bg-purple-500/20 border border-purple-500/30 text-purple-300 active:bg-purple-500/30 transition"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  Mix
+                </button>
+              </div>
             </div>
 
             {/* Scrollable stat chips */}
-            <div className="bg-white/5 rounded-2xl border border-white/10 p-4 max-h-[300px] overflow-y-auto">
+            <div className="bg-white/5 rounded-xl border border-white/10 p-3 max-h-[200px] overflow-y-auto">
               {(["distance", "health", "fun", "records", "time"] as const).map(category => {
                 const categoryStats = CUSTOM_STATS.filter(s => s.category === category && s.available(stats));
                 if (categoryStats.length === 0) return null;
@@ -1253,28 +1253,26 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
                 };
 
                 return (
-                  <div key={category} className="mb-4 last:mb-0">
-                    <p className="text-white/30 text-[10px] uppercase tracking-wider mb-2 font-semibold">{categoryLabels[category]}</p>
-                    <div className="flex flex-wrap gap-2">
+                  <div key={category} className="mb-3 last:mb-0">
+                    <p className="text-white/25 text-[9px] uppercase tracking-wider mb-1.5 font-semibold">{categoryLabels[category]}</p>
+                    <div className="flex flex-wrap gap-1.5">
                       {categoryStats.map(stat => {
                         const isSelected = selectedCustomStats.includes(stat.id);
-                        const value = stat.getValue(stats);
 
                         return (
                           <button
                             key={stat.id}
                             onClick={() => toggleStat(stat.id)}
                             disabled={!isSelected && selectedCustomStats.length >= 5}
-                            className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95 ${
+                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all active:scale-95 ${
                               isSelected
-                                ? "bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border-2 border-cyan-400 text-white shadow-lg shadow-cyan-500/20"
-                                : "bg-black/30 border border-white/10 text-white/60 disabled:opacity-25"
+                                ? "bg-cyan-500/25 border border-cyan-400 text-cyan-200"
+                                : "bg-black/30 border border-white/10 text-white/50 disabled:opacity-20"
                             }`}
                           >
-                            {isSelected && <Check className="w-4 h-4 text-cyan-300" />}
-                            <span className="[&>svg]:w-4 [&>svg]:h-4 text-white/50">{stat.icon}</span>
+                            {isSelected && <Check className="w-3 h-3" />}
+                            <span className="[&>svg]:w-3.5 [&>svg]:h-3.5">{stat.icon}</span>
                             <span>{stat.label}</span>
-                            {value && <span className="text-white/40 text-xs">({value})</span>}
                           </button>
                         );
                       })}
@@ -1285,37 +1283,27 @@ export default function FinalShareSlide({ stats }: FinalShareSlideProps) {
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            {/* Primary Download Button */}
-            <button
-              onClick={handleDownload}
-              disabled={isGenerating}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-lg flex items-center justify-center gap-3 active:scale-[0.98] transition disabled:opacity-70 relative overflow-hidden shadow-2xl"
-            >
-              {isGenerating && generatingProgress > 0 && (
-                <div
-                  className="absolute inset-0 bg-white/20 transition-all duration-300"
-                  style={{ width: `${generatingProgress}%` }}
-                />
+          {/* Download Button */}
+          <button
+            onClick={handleDownload}
+            disabled={isGenerating}
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-base flex items-center justify-center gap-2 active:scale-[0.98] transition disabled:opacity-70 relative overflow-hidden shadow-xl"
+          >
+            {isGenerating && generatingProgress > 0 && (
+              <div
+                className="absolute inset-0 bg-white/20 transition-all duration-300"
+                style={{ width: `${generatingProgress}%` }}
+              />
+            )}
+            <span className="relative flex items-center gap-2">
+              {isGenerating ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Download className="w-5 h-5" />
               )}
-              <span className="relative flex items-center gap-3">
-                {isGenerating ? (
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                ) : (
-                  <Download className="w-6 h-6" />
-                )}
-                {isGenerating
-                  ? `${generatingProgress}% erstellt...`
-                  : "Bild speichern"
-                }
-              </span>
-            </button>
-
-            <p className="text-center text-white/40 text-xs">
-              Das Bild wird in deiner Galerie gespeichert
-            </p>
-          </div>
+              {isGenerating ? `${generatingProgress}%...` : "Bild speichern"}
+            </span>
+          </button>
         </div>
       </div>
     </>
