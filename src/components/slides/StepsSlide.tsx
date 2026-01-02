@@ -542,13 +542,8 @@ export default function StepsSlide({ stats }: StepsSlideProps) {
           <MonthlyChart monthlySteps={wellness.monthlySteps} bestMonth={wellness.bestMonth} />
         </div>
 
-        {/* Floors and Distance row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <FloorsVisualization
-            totalFloors={wellness.totalFloorsClimbed}
-            avgDaily={wellness.avgDailyFloors}
-            weeklyFloors={wellness.weeklyFloors}
-          />
+        {/* Distance comparison */}
+        <div className="mb-4">
           <DistanceComparison totalSteps={wellness.estimatedYearlySteps} />
         </div>
 

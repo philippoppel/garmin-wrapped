@@ -219,9 +219,6 @@ async function fetchWellnessData(client: any, year: number) {
     bestStepsDay: { date: null, steps: 0 },
     userSettings: null,
     sweatLossSamples: [],
-    // Floor data - sampled from a few days only to avoid rate limiting
-    floorSamples: [],
-    floorDataAvailable: false,
   };
 
   // Get user settings for VO2Max and other metrics
@@ -367,59 +364,8 @@ async function fetchWellnessData(client: any, year: number) {
     }
   }
 
-  // Fetch REAL floor data - try dailies endpoint first
-  console.log("Fetching floor data...");
-
-  // Try the dailies endpoint which returns all daily summaries including floors
-  try {
-    const dailiesData = await client.get(
-      `https://connect.garmin.com/modern/proxy/usersummary-service/usersummary/dailies?calendarStartDate=${year}-01-01&calendarEndDate=${year}-12-31`,
-      {}
-    ).catch(() => null);
-
-    if (dailiesData && Array.isArray(dailiesData) && dailiesData.length > 0) {
-      console.log(`  Dailies endpoint returned ${dailiesData.length} days`);
-      for (const day of dailiesData) {
-        const floors = day.floorsClimbed ?? day.floorsAscended ?? 0;
-        if (floors > 0) {
-          wellnessData.floorSamples.push({
-            date: new Date(day.calendarDate),
-            floors: floors,
-          });
-        }
-      }
-      wellnessData.floorDataAvailable = wellnessData.floorSamples.length > 0;
-      console.log(`  Got ${wellnessData.floorSamples.length} days with floor data`);
-    }
-  } catch (e) {
-    console.log("  Dailies endpoint failed");
-  }
-
-  // Fallback: try 7 recent individual daily summaries
-  if (!wellnessData.floorDataAvailable) {
-    console.log("  Trying recent individual daily summaries...");
-    for (let i = 1; i <= 7; i++) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      if (d.getFullYear() !== year) continue;
-
-      const dateStr = d.toISOString().split("T")[0];
-      try {
-        const summary = await client.get(
-          `https://connect.garmin.com/modern/proxy/usersummary-service/usersummary/daily/${dateStr}`,
-          {}
-        ).catch(() => null);
-
-        if (summary && typeof summary.floorsClimbed === "number" && summary.floorsClimbed > 0) {
-          wellnessData.floorSamples.push({ date: d, floors: summary.floorsClimbed });
-          wellnessData.floorDataAvailable = true;
-          console.log(`    ${dateStr}: ${summary.floorsClimbed} floors`);
-        }
-      } catch (e) { /* continue */ }
-    }
-  }
-
-  console.log(`Floor data result: ${wellnessData.floorSamples.length} samples, available: ${wellnessData.floorDataAvailable}`);
+  // Floor data not available via unofficial Garmin API
+  // The API endpoints return empty objects for floor data
 
   // Calculate monthly averages
   for (let m = 0; m < 12; m++) {
@@ -1419,57 +1365,11 @@ function processWellnessInsights(wellnessData: any, activities: any[]) {
   // Find months sorted by steps
   const monthNames = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
-  // Floor data - use REAL Garmin data if available, otherwise fall back to elevation estimate
-  let totalFloorsClimbed = 0;
-  let avgDailyFloors = 0;
-  let hasRealFloorData = false;
-  const weeklyFloors: { [key: string]: number } = { sun: 0, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 };
-  const dayNames = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-
-  if (wellnessData.floorDataAvailable && wellnessData.floorSamples.length > 0) {
-    // Use REAL floor data from Garmin API
-    hasRealFloorData = true;
-    const totalSampledFloors = wellnessData.floorSamples.reduce((sum: number, s: any) => sum + s.floors, 0);
-    avgDailyFloors = Math.round(totalSampledFloors / wellnessData.floorSamples.length);
-    totalFloorsClimbed = avgDailyFloors * 365;
-
-    // Calculate weekly pattern from samples
-    const weekdayFloors: { [key: string]: number } = { sun: 0, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 };
-    const weekdayCounts: { [key: string]: number } = { sun: 0, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 };
-    for (const sample of wellnessData.floorSamples) {
-      const dayOfWeek = new Date(sample.date).getDay();
-      const dayKey = dayNames[dayOfWeek];
-      weekdayFloors[dayKey] += sample.floors;
-      weekdayCounts[dayKey]++;
-    }
-    for (const day of dayNames) {
-      weeklyFloors[day] = weekdayCounts[day] > 0 ? Math.round(weekdayFloors[day] / weekdayCounts[day]) : avgDailyFloors;
-    }
-
-    console.log(`Using REAL floor data: ${avgDailyFloors}/day, ${totalFloorsClimbed}/year`);
-  } else {
-    // Fallback: estimate from elevation gain (1 floor ≈ 3 meters)
-    const totalElevation = activities.reduce((sum: number, a: any) => sum + (a.elevationGain || 0), 0);
-    totalFloorsClimbed = Math.round(totalElevation / 3);
-    avgDailyFloors = Math.round(totalFloorsClimbed / 365);
-    hasRealFloorData = totalElevation > 0;
-
-    // Calculate weekday pattern from activity elevation
-    const weekdayElevation: { [key: string]: number } = { sun: 0, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 };
-    const weekdayCounts: { [key: string]: number } = { sun: 0, mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 };
-    for (const activity of activities) {
-      const dayOfWeek = new Date(activity.startTimeLocal).getDay();
-      const dayKey = dayNames[dayOfWeek];
-      weekdayElevation[dayKey] += activity.elevationGain || 0;
-      weekdayCounts[dayKey]++;
-    }
-    for (const day of dayNames) {
-      const avgElevation = weekdayCounts[day] > 0 ? weekdayElevation[day] / weekdayCounts[day] : 0;
-      weeklyFloors[day] = Math.round(avgElevation / 3);
-    }
-
-    console.log(`Using ESTIMATED floor data from elevation: ${avgDailyFloors}/day, ${totalFloorsClimbed}/year`);
-  }
+  // Floor data not available via unofficial Garmin API - hide section
+  const hasRealFloorData = false;
+  const totalFloorsClimbed = 0;
+  const avgDailyFloors = 0;
+  const weeklyFloors: { [key: string]: number } = {};
 
   // Sweat loss - try hydration data first, then fall back to activity waterEstimated
   const sweatLossSamples = wellnessData.sweatLossSamples || [];
