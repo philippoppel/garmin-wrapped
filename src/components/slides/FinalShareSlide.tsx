@@ -652,6 +652,32 @@ function MediaBackground({ media }: { media: MediaProps }) {
   );
 }
 
+// SVG Gradient Year Text - works with html2canvas
+function GradientYearText({ year }: { year: number }) {
+  return (
+    <svg viewBox="0 0 200 60" className="w-48 h-auto mx-auto">
+      <defs>
+        <linearGradient id="yearGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#22d3ee" />
+          <stop offset="50%" stopColor="#60a5fa" />
+          <stop offset="100%" stopColor="#a855f7" />
+        </linearGradient>
+      </defs>
+      <text
+        x="100"
+        y="48"
+        textAnchor="middle"
+        fill="url(#yearGradient)"
+        fontSize="52"
+        fontWeight="900"
+        fontFamily="system-ui, -apple-system, sans-serif"
+      >
+        {year}
+      </text>
+    </svg>
+  );
+}
+
 // Custom Card with selectable stats - compact layout for 5 stats
 function CustomCard({ stats, media, selectedStats }: { stats: YearStats; media: MediaProps; selectedStats: string[] }) {
   const displayStats = selectedStats
@@ -668,15 +694,7 @@ function CustomCard({ stats, media, selectedStats }: { stats: YearStats; media: 
         {/* Hero Header - Compact */}
         <div className="text-center pt-4 pb-2">
           <div className="text-white/60 text-[8px] font-bold tracking-[0.25em] uppercase mb-0.5">Mein Sportjahr</div>
-          <div
-            className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500"
-            style={{
-              textShadow: "0 0 30px rgba(6, 182, 212, 0.5), 0 0 60px rgba(139, 92, 246, 0.3)",
-              WebkitTextStroke: "1px rgba(255,255,255,0.1)"
-            }}
-          >
-            {stats.year}
-          </div>
+          <GradientYearText year={stats.year} />
         </div>
 
         {/* Stats Grid - Compact 2x3 layout */}
