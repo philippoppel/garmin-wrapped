@@ -655,7 +655,7 @@ function MediaBackground({ media }: { media: MediaProps }) {
 // SVG Gradient Year Text - works with html2canvas
 function GradientYearText({ year }: { year: number }) {
   return (
-    <svg viewBox="0 0 200 60" className="w-48 h-auto mx-auto">
+    <svg viewBox="0 0 160 50" className="w-40 h-auto mx-auto">
       <defs>
         <linearGradient id="yearGradient" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#22d3ee" />
@@ -664,11 +664,11 @@ function GradientYearText({ year }: { year: number }) {
         </linearGradient>
       </defs>
       <text
-        x="100"
-        y="48"
+        x="80"
+        y="40"
         textAnchor="middle"
         fill="url(#yearGradient)"
-        fontSize="52"
+        fontSize="42"
         fontWeight="900"
         fontFamily="system-ui, -apple-system, sans-serif"
       >
